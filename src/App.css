@@ -1,0 +1,236 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Styles for the fixed Bootstrap navbar */
+nav.navbar {
+  background-color: #333;
+  color: #fff;
+  padding: 0.5rem 1rem; /* Adjust padding to match Bootstrap navbar */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure the navbar stays above other content */
+}
+
+/* Container for the navbar content */
+nav .container-fluid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Navbar brand styling */
+nav .navbar-brand {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* Navbar link styling */
+nav .nav-link {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 0.5rem; /* Adjust margin for spacing between links */
+}
+
+/* Active link styling */
+nav .nav-link.active {
+  font-weight: bold;
+}
+
+/* Navbar link hover styling */
+nav .nav-link:hover {
+  text-decoration: none;
+}
+
+/* Styles for dropdown menu */
+nav .dropdown-menu {
+  background-color: #333; /* Match the navbar background color */
+}
+
+/* Dropdown items styling */
+nav .dropdown-item {
+  color: #fff;
+}
+
+/* Dropdown item hover styling */
+nav .dropdown-item:hover {
+  background-color: #555; /* Slightly lighter for hover effect */
+}
+
+/* Disabled link styling */
+nav .nav-link.disabled {
+  color: #6c757d; /* Match Bootstrap disabled color */
+}
+
+/* Form styling inside the navbar */
+nav .d-flex {
+  margin-left: auto;
+}
+
+nav .form-control {
+  margin-right: 0.5rem;
+}
+
+nav .btn-outline-success {
+  color: #fff;
+  border-color: #fff;
+}
+
+nav .btn-outline-success:hover {
+  background-color: #fff;
+  color: #333;
+}
+
+/* Adjust body padding to prevent content from hiding under fixed navbar */
+body {
+  padding-top: 200px; /* Adjust based on your navbar height */
+}
+.auth-form {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+}
+
+.auth-form h2 {
+  color: #343a40;
+}
+
+.auth-form .form-control {
+  border-radius: 0.25rem;
+}
+
+.auth-form .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.auth-form .btn-primary:disabled {
+  background-color: #c6c6c6;
+  border-color: #c6c6c6;
+}
+
+.auth-form .btn-primary:hover {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+/* App.css */
+.logo {
+  height: 40px;
+  filter: none; /* Ensure logo is displayed correctly */
+}
+
+.navbar {
+  font-family: 'Roboto', sans-serif; /* Apply Roboto font */
+}
+
+.nav-item {
+  position: relative; /* Necessary for positioning pseudo-elements */
+  margin: 0 10px;
+  padding: 10px; /* Padding for better spacing */
+  font-weight: 400; /* Default font weight */
+  transition: color 0.3s ease, font-weight 0.3s ease; /* Smooth color and font-weight transitions */
+}
+
+.nav-item::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px; /* Height of the underline */
+  background-color: #d2002d; /* Red underline color */
+  border-radius: 50px; /* Rounded edges */
+  transition: width 0.3s ease; /* Smooth width transition */
+}
+
+.nav-item:hover::after {
+  width: 100%; /* Full width on hover */
+}
+
+.nav-item:hover {
+  color: #d2002d; /* Highlight color on hover */
+  font-weight: 700; /* Make text bold on hover */
+}
+
+/* Remove red underline from icons */
+.nav-link {
+  font-size: 18px; /* Adjust size for icons */
+}
+
+.nav-link:hover {
+  color: #d2002d; /* Highlight color on hover */
+}
+
+.user-dropdown .dropdown-menu {
+  background-color: #343a40; /* Dark background for dropdown menu */
+  border: none;
+}
+
+.user-dropdown .dropdown-item {
+  color: #f8f9fa;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.user-dropdown .dropdown-item:hover {
+  background-color: #d2002d; /* Highlight color on hover */
+  color: white;
+}
+/* Minimalistic Footer styling */
+.footer_base {
+  background-color: #343a40; /* Dark background */
+  color: #f8f9fa; /* Light text color */
+  padding: 20px 0; /* Adjust padding as needed */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+}
+
+.footer_content_wrap {
+  max-width: 1200px; /* Set a max-width for better control */
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.footer_content_main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.footer_text_left {
+  flex: 1;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.footer_center {
+  flex: 1;
+  text-align: center;
+}
+
+.footer_text_right {
+  flex: 1;
+  text-align: right;
+}
+
+.footer_email {
+  display: block;
+  color: #f8f9fa;
+  text-decoration: none;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+.logo {
+  height: 100px;
+  width: 100px;
+}
