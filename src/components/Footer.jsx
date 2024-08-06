@@ -1,7 +1,5 @@
 import React from "react";
-import "../App.css"; // Import your existing App.css
-import { FaTwitter, FaLinkedin, FaFacebook, FaYoutube, FaInstagram } from "react-icons/fa";
-
+import "../App.css";
 const Footer = () => {
   return (
     <footer className="footer_base">

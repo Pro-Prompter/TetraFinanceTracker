@@ -1,12 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Navbar,
-  Nav,
-  NavDropdown
-} from "react-bootstrap";
+import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { FaCog, FaUsers, FaUserCircle } from "react-icons/fa";
-import '../App.css'; // Import your App.css
+import "../App.css";
 
 const NavigationBar = () => {
   return (

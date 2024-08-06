@@ -14,6 +14,7 @@ import Reports from './components/Reports';
 import Users from './components/Users';
 import Settings from './components/Settings';
 import Auth from './lib/Auth';
+import ClipLoader from 'react-spinners/ClipLoader';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -24,7 +25,11 @@ const App = () => {
   }, [dispatch]);
 
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-container">
+        <ClipLoader size={150} color={"#d2002d"} loading={true} />
+      </div>
+    );
   }
 
   if (status === 'failed') {

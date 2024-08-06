@@ -1,26 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Table, Button, Form, Modal, Spinner } from 'react-bootstrap';
-import Swal from 'sweetalert2';
-import { format, parseISO } from 'date-fns';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Table, Button, Form, Modal, Spinner } from "react-bootstrap";
+import Swal from "sweetalert2";
+import { format, parseISO } from "date-fns";
 import {
   fetchTransactions,
   addTransaction,
   updateTransaction,
-  deleteTransaction
-} from '../lib/redux/transactionsSlice';
+  deleteTransaction,
+} from "../lib/redux/transactionsSlice";
 
 const Transactions = () => {
   const dispatch = useDispatch();
-  const { transactions, status, error } = useSelector((state) => state.transactions);
+  const { transactions, status, error } = useSelector(
+    (state) => state.transactions
+  );
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('add');
+  const [modalMode, setModalMode] = useState("add");
   const [currentTransaction, setCurrentTransaction] = useState({
-    Date: '',
-    Amount: '',
-    Type: '',
-    Comments: '',
-    Currency: 'PKR' // Default currency
+    Date: "",
+    Amount: "",
+    Type: "",
+    Comments: "",
+    Currency: "PKR", // Default currency
   });
 
   useEffect(() => {
@@ -29,15 +31,15 @@ const Transactions = () => {
 
   const handleShow = (mode, transaction = {}) => {
     setModalMode(mode);
-    if (mode === 'edit' && transaction) {
+    if (mode === "edit" && transaction) {
       setCurrentTransaction({ ...transaction });
     } else {
       setCurrentTransaction({
-        Date: '',
-        Amount: '',
-        Type: '',
-        Comments: '',
-        Currency: 'USD'
+        Date: "",
+        Amount: "",
+        Type: "",
+        Comments: "",
+        Currency: "USD",
       });
     }
     setShowModal(true);
@@ -46,36 +48,40 @@ const Transactions = () => {
   const handleClose = () => {
     setShowModal(false);
     setCurrentTransaction({
-      Date: '',
-      Amount: '',
-      Type: '',
-      Comments: '',
-      Currency: 'USD'
+      Date: "",
+      Amount: "",
+      Type: "",
+      Comments: "",
+      Currency: "USD",
     });
   };
 
   const handleSave = async () => {
     const transactionData = {
-      Date: format(new Date(currentTransaction.Date), 'yyyy-MM-dd'),
-      Amount: parseFloat(currentTransaction.Amount.replace(/[^0-9.-]+/g, '')).toFixed(2), // Clean and format amount
+      Date: format(new Date(currentTransaction.Date), "yyyy-MM-dd"),
+      Amount: parseFloat(
+        currentTransaction.Amount.replace(/[^0-9.-]+/g, "")
+      ).toFixed(2), // Clean and format amount
       Type: currentTransaction.Type,
       Comments: currentTransaction.Comments,
-      Currency: currentTransaction.Currency
+      Currency: currentTransaction.Currency,
     };
 
     try {
-      if (modalMode === 'add') {
+      if (modalMode === "add") {
         await dispatch(addTransaction(transactionData));
-      } else if (modalMode === 'edit') {
-        await dispatch(updateTransaction({ ...transactionData, $id: currentTransaction.$id }));
+      } else if (modalMode === "edit") {
+        await dispatch(
+          updateTransaction({ ...transactionData, $id: currentTransaction.$id })
+        );
       }
       handleClose();
     } catch (error) {
-      console.error('Error saving transaction:', error);
+      console.error("Error saving transaction:", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'There was a problem saving the transaction.',
-        icon: 'error'
+        title: "Error!",
+        text: "There was a problem saving the transaction.",
+        icon: "error",
       });
     }
   };
@@ -83,32 +89,34 @@ const Transactions = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
+        title: "Are you sure?",
         text: "You won't be able to revert this!",
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
       });
 
       if (result.isConfirmed) {
         await dispatch(deleteTransaction(id));
         await Swal.fire({
-          title: 'Deleted!',
-          text: 'Transaction has been deleted.',
-          icon: 'success'
+          title: "Deleted!",
+          text: "Transaction has been deleted.",
+          icon: "success",
         });
       }
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      console.error("Error deleting transaction:", error);
     }
   };
 
   return (
     <div>
       <h1>Transactions</h1>
-      <Button variant="primary" onClick={() => handleShow('add')}>Add Transaction</Button>
+      <Button variant="primary" onClick={() => handleShow("add")}>
+        Add Transaction
+      </Button>
       <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
@@ -121,21 +129,43 @@ const Transactions = () => {
           </tr>
         </thead>
         <tbody>
-          {status === 'loading' ? (
-            <tr><td colSpan="6" className="text-center"><Spinner animation="border" /></td></tr>
-          ) : status === 'failed' ? (
-            <tr><td colSpan="6" className="text-center">Error: {error}</td></tr>
+          {status === "loading" ? (
+            <tr>
+              <td colSpan="6" className="text-center">
+                <Spinner animation="border" />
+              </td>
+            </tr>
+          ) : status === "failed" ? (
+            <tr>
+              <td colSpan="6" className="text-center">
+                Error: {error}
+              </td>
+            </tr>
           ) : (
             transactions.map((transaction, index) => (
               <tr key={transaction.$id}>
                 <td>{index + 1}</td>
-                <td>{format(parseISO(transaction.Date), 'dd-MM-yyyy')}</td>
-                <td>{transaction.Currency} {parseFloat(transaction.Amount).toFixed(2)}</td> {/* Ensure amount is formatted */}
+                <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
+                <td>
+                  {transaction.Currency}{" "}
+                  {parseFloat(transaction.Amount).toFixed(2)}
+                </td>
                 <td>{transaction.Type}</td>
                 <td>{transaction.Comments}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShow('edit', transaction)} className="mr-2">Edit</Button>
-                  <Button variant="danger" onClick={() => handleDelete(transaction.$id)}>Delete</Button>
+                  <Button
+                    variant="warning"
+                    onClick={() => handleShow("edit", transaction)}
+                    className="mr-2"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDelete(transaction.$id)}
+                  >
+                    Delete
+                  </Button>
                 </td>
               </tr>
             ))
@@ -146,7 +176,9 @@ const Transactions = () => {
       {/* Modal for Add/Edit Transaction */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>{modalMode === 'add' ? 'Add Transaction' : 'Edit Transaction'}</Modal.Title>
+          <Modal.Title>
+            {modalMode === "add" ? "Add Transaction" : "Edit Transaction"}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -155,7 +187,12 @@ const Transactions = () => {
               <Form.Control
                 type="date"
                 value={currentTransaction.Date}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Date: e.target.value })}
+                onChange={(e) =>
+                  setCurrentTransaction({
+                    ...currentTransaction,
+                    Date: e.target.value,
+                  })
+                }
               />
             </Form.Group>
             <Form.Group controlId="formAmount">
@@ -165,7 +202,12 @@ const Transactions = () => {
                 step="0.01"
                 placeholder="Enter Amount"
                 value={currentTransaction.Amount}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Amount: e.target.value })}
+                onChange={(e) =>
+                  setCurrentTransaction({
+                    ...currentTransaction,
+                    Amount: e.target.value,
+                  })
+                }
               />
             </Form.Group>
             <Form.Group controlId="formType">
@@ -173,11 +215,18 @@ const Transactions = () => {
               <Form.Control
                 as="select"
                 value={currentTransaction.Type}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Type: e.target.value })}
+                onChange={(e) =>
+                  setCurrentTransaction({
+                    ...currentTransaction,
+                    Type: e.target.value,
+                  })
+                }
               >
                 <option value="">Select Type</option>
-                {['Income', 'Expense'].map((Type) => (
-                  <option key={Type} value={Type}>{Type}</option>
+                {["Income", "Expense"].map((Type) => (
+                  <option key={Type} value={Type}>
+                    {Type}
+                  </option>
                 ))}
               </Form.Control>
             </Form.Group>
@@ -186,13 +235,17 @@ const Transactions = () => {
               <Form.Control
                 as="select"
                 value={currentTransaction.Currency}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Currency: e.target.value })}
+                onChange={(e) =>
+                  setCurrentTransaction({
+                    ...currentTransaction,
+                    Currency: e.target.value,
+                  })
+                }
               >
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
-                <option value="INR">INR</option>
+                <option value="GBP">GBP</option>
                 <option value="PKR">PKR</option>
-                {/* Add more currencies as needed */}
               </Form.Control>
             </Form.Group>
             <Form.Group controlId="formComments">
@@ -202,14 +255,23 @@ const Transactions = () => {
                 rows={3}
                 placeholder="Enter comments"
                 value={currentTransaction.Comments}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Comments: e.target.value })}
+                onChange={(e) =>
+                  setCurrentTransaction({
+                    ...currentTransaction,
+                    Comments: e.target.value,
+                  })
+                }
               />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>Close</Button>
-          <Button variant="primary" onClick={handleSave}>Save Changes</Button>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

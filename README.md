@@ -1,4 +1,4 @@
-```markdown
+````markdown
 # Tetra Finance Tracker
 
 This project is a finance management system designed for Tetra Studio to handle client payments, savings, team member commissions, and more. It is built using modern web technologies, including React, Vite, Bootstrap, and Appwrite.
@@ -31,6 +31,7 @@ This project is a finance management system designed for Tetra Studio to handle 
    git clone https://github.com/yourusername/Tetra-Finance-Tracker.git
    cd Tetra-Finance-Tracker
    ```
+````
 
 2. **Install dependencies:**
 
@@ -114,6 +115,7 @@ src/
 - `react-currency-input-field`: ^3.8.0
 - `react-dom`: ^18.3.1
 - `react-icons`: ^5.2.1
+- `react-spinners`: ^0.14.1
 - `react-redux`: ^9.1.2
 - `react-router-dom`: ^6.26.0
 - `redux`: ^5.0.1

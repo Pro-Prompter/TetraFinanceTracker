@@ -161,7 +161,7 @@ const Dashboard = () => {
           </Row>
         </>
       )}
-      <Footer />  {/* Add the Footer component */}
+      <Footer />
     </div>
   );
 };
