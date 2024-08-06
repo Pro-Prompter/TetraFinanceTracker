@@ -12,7 +12,7 @@ export const checkAuth = createAsyncThunk(
       while (!authenticated && retries < maxRetries) {
         try {
           const session = await account.getSession("current");
-          authenticated = !!session;
+          authenticated = session && true;
         } catch (error) {
           retries++;
           console.error(
@@ -22,11 +22,7 @@ export const checkAuth = createAsyncThunk(
         }
       }
 
-      if (!authenticated) {
-        return rejectWithValue({
-          message: "Failed to check authentication after multiple attempts",
-        });
-      }
+     console.log(authenticated);
 
       return { authenticated };
     } catch (error) {
