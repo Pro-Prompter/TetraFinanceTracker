@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Form, Alert, Spinner, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { login, signup, checkAuth } from './redux/authSlice'; // Correct path
+import { login, signup, checkAuth } from '../lib/redux/authSlice'; // Correct path
 import { useDispatch, useSelector } from 'react-redux';
 
 const Auth = ({ mode }) => {
