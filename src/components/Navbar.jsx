@@ -31,14 +31,8 @@ const NavigationBar = () => {
           <Nav.Link as={Link} to="/savings" className="nav-item">
             Savings
           </Nav.Link>
-          <Nav.Link as={Link} to="/pending-payments" className="nav-item">
-            Pending
-          </Nav.Link>
           <Nav.Link as={Link} to="/team-commissions" className="nav-item">
             Commissions
-          </Nav.Link>
-          <Nav.Link as={Link} to="/revenue-sources" className="nav-item">
-            Revenue
           </Nav.Link>
           <Nav.Link as={Link} to="/reports" className="nav-item">
             Reports

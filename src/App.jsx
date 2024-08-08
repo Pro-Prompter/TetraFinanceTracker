@@ -7,9 +7,7 @@ import Dashboard from './components/Dashboard';
 import Clients from './components/Clients';
 import Transactions from './components/Transactions';
 import Savings from './components/Savings';
-import PendingPayments from './components/PendingPayments';
 import TeamCommissions from './components/TeamCommissions';
-import RevenueSources from './components/RevenueSources';
 import Reports from './components/Reports';
 import Users from './components/Users';
 import Settings from './components/Settings';
@@ -58,9 +56,7 @@ const App = () => {
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/savings" element={<Savings />} />
-                  <Route path="/pending-payments" element={<PendingPayments />} />
                   <Route path="/team-commissions" element={<TeamCommissions />} />
-                  <Route path="/revenue-sources" element={<RevenueSources />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/users" element={<Users />} />
                   <Route path="/settings" element={<Settings />} />

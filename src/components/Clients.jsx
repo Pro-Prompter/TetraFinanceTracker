@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClients, addClient, updateClient, deleteClient } from '../lib/redux/clientsSlice';
+import Footer from './Footer';
 
 const Clients = () => {
   const dispatch = useDispatch();
@@ -56,7 +57,7 @@ const Clients = () => {
   return (
     <div>
       <h1>Clients</h1>
-      <Button variant="primary" onClick={handleAddShow}>
+      <Button variant="primary" onClick={handleAddShow} className='my-4'>
         Add Client
       </Button>
       {status === 'loading' && <p>Loading...</p>}
@@ -79,7 +80,7 @@ const Clients = () => {
               <td>{client.project}</td>
               <td>{client.status}</td>
               <td>
-                <Button variant="warning" onClick={() => handleUpdateShow(client)}>
+                <Button variant="warning" onClick={() => handleUpdateShow(client)} className='mx-2'>
                   Edit
                 </Button>
                 <Button variant="danger" onClick={() => handleDeleteClient(client.$id)}>
@@ -90,6 +91,7 @@ const Clients = () => {
           ))}
         </tbody>
       </Table>
+      <Footer />
 
       {/* Add Client Modal */}
       <Modal show={showAddModal} onHide={handleAddClose}>
@@ -128,7 +130,7 @@ const Clients = () => {
                 placeholder="Enter payment status"
               />
             </Form.Group>
-            <Button variant="primary" onClick={handleAddClient}>
+            <Button variant="primary" onClick={handleAddClient} className='my-4'>
               Add Client
             </Button>
           </Form>

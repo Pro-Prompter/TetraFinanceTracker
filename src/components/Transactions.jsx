@@ -9,6 +9,7 @@ import {
   updateTransaction,
   deleteTransaction,
 } from "../lib/redux/transactionsSlice";
+import Footer from "./Footer";
 
 const Transactions = () => {
   const dispatch = useDispatch();
@@ -22,8 +23,10 @@ const Transactions = () => {
     Amount: "",
     Type: "",
     Comments: "",
-    Currency: "PKR", // Default currency
+    Currency: "PKR",
+    Status: "", // Add status field
   });
+  const [filterStatus, setFilterStatus] = useState("All"); // Filter state
 
   useEffect(() => {
     dispatch(fetchTransactions());
@@ -40,6 +43,7 @@ const Transactions = () => {
         Type: "",
         Comments: "",
         Currency: "USD",
+        Status: "", // Reset status
       });
     }
     setShowModal(true);
@@ -53,6 +57,7 @@ const Transactions = () => {
       Type: "",
       Comments: "",
       Currency: "USD",
+      Status: "", // Reset status
     });
   };
 
@@ -61,10 +66,11 @@ const Transactions = () => {
       Date: format(new Date(currentTransaction.Date), "yyyy-MM-dd"),
       Amount: parseFloat(
         currentTransaction.Amount.replace(/[^0-9.-]+/g, "")
-      ).toFixed(2), // Clean and format amount
+      ).toFixed(2),
       Type: currentTransaction.Type,
       Comments: currentTransaction.Comments,
       Currency: currentTransaction.Currency,
+      Status: currentTransaction.Status, // Include status
     };
 
     try {
@@ -111,12 +117,33 @@ const Transactions = () => {
     }
   };
 
+  // Filter transactions based on selected status
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (filterStatus === "All") return true;
+    return transaction.Status === filterStatus;
+  });
+
   return (
     <div>
       <h1>Transactions</h1>
-      <Button variant="primary" onClick={() => handleShow("add")}>
-        Add Transaction
-      </Button>
+      <div className="mb-3">
+        <Form.Group controlId="formFilterStatus">
+          <Form.Label>Filter by Status</Form.Label>
+          <Form.Control
+            as="select"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="All">All</option>
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+            <option value="Unpaid">Unpaid</option>
+          </Form.Control>
+        </Form.Group>
+        <Button variant="primary" onClick={() => handleShow("add")} className="my-4">
+          Add Transaction
+        </Button>
+      </div>
       <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
@@ -125,24 +152,25 @@ const Transactions = () => {
             <th>Amount</th>
             <th>Type</th>
             <th>Comments</th>
+            <th>Status</th> {/* Add Status column */}
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {status === "loading" ? (
             <tr>
-              <td colSpan="6" className="text-center">
+              <td colSpan="7" className="text-center">
                 <Spinner animation="border" />
               </td>
             </tr>
           ) : status === "failed" ? (
             <tr>
-              <td colSpan="6" className="text-center">
+              <td colSpan="7" className="text-center">
                 Error: {error}
               </td>
             </tr>
           ) : (
-            transactions.map((transaction, index) => (
+            filteredTransactions.map((transaction, index) => (
               <tr key={transaction.$id}>
                 <td>{index + 1}</td>
                 <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
@@ -152,6 +180,7 @@ const Transactions = () => {
                 </td>
                 <td>{transaction.Type}</td>
                 <td>{transaction.Comments}</td>
+                <td>{transaction.Status}</td> {/* Add Status */}
                 <td>
                   <Button
                     variant="warning"
@@ -163,6 +192,7 @@ const Transactions = () => {
                   <Button
                     variant="danger"
                     onClick={() => handleDelete(transaction.$id)}
+                    className="mx-3"
                   >
                     Delete
                   </Button>
@@ -172,7 +202,7 @@ const Transactions = () => {
           )}
         </tbody>
       </Table>
-
+          <Footer />
       {/* Modal for Add/Edit Transaction */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -246,6 +276,24 @@ const Transactions = () => {
                 <option value="EUR">EUR</option>
                 <option value="GBP">GBP</option>
                 <option value="PKR">PKR</option>
+              </Form.Control>
+            </Form.Group>
+            <Form.Group controlId="formStatus">
+              <Form.Label>Status</Form.Label>
+              <Form.Control
+                as="select"
+                value={currentTransaction.Status}
+                onChange={(e) =>
+                  setCurrentTransaction({
+                    ...currentTransaction,
+                    Status: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Paid">Paid</option>
+                <option value="Unpaid">Unpaid</option>
               </Form.Control>
             </Form.Group>
             <Form.Group controlId="formComments">

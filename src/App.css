@@ -1,100 +1,88 @@
+/* Global styles */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: background 0.3s ease; /* Smooth transition for background changes */
+  padding-top: 200px;
 }
 
-/* Styles for the fixed Bootstrap navbar */
-nav.navbar {
-  background-color: #333;
+/* Light mode styling */
+.light-mode {
+  background: linear-gradient(to right, #fbc2eb, #a6c0fe);
+  color: #000;
+}
+
+/* Dark mode styling */
+.dark-mode {
+  background: linear-gradient(to right, #333, #666);
   color: #fff;
-  padding: 0.5rem 1rem; /* Adjust padding to match Bootstrap navbar */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1000; /* Ensure the navbar stays above other content */
 }
 
-/* Container for the navbar content */
-nav .container-fluid {
+/* Ensure full-page gradient */
+.auth-page {
+  height: 100vh;
+  width: 100vw;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  background: inherit; /* Inherit gradient from light-mode or dark-mode */
+}
+
+/* Styling for card */
+.auth-card {
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative; /* Ensure positioning for theme toggle button */
+  padding: 2rem; /* Add padding for better spacing */
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
-/* Navbar brand styling */
-nav .navbar-brand {
-  color: #fff;
-  font-size: 1.25rem;
-  font-weight: 500;
-  text-decoration: none;
+/* Center and style the buttons */
+.btn-animate {
+  transition: all 0.3s ease;
+  width: 100%; /* Make buttons full width */
+  max-width: 400px; /* Limit maximum width */
 }
 
-/* Navbar link styling */
-nav .nav-link {
-  color: #fff;
-  text-decoration: none;
-  margin: 0 0.5rem; /* Adjust margin for spacing between links */
+.btn-animate:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
 }
 
-/* Active link styling */
-nav .nav-link.active {
-  font-weight: bold;
+/* Toggle button styling */
+.theme-toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent; /* Remove black background */
+  color: inherit; /* Inherit text color */
+  border: none;
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
-/* Navbar link hover styling */
-nav .nav-link:hover {
-  text-decoration: none;
+.theme-toggle-btn:hover {
+  color: #d2002d; /* Change color on hover for visibility */
 }
 
-/* Styles for dropdown menu */
-nav .dropdown-menu {
-  background-color: #333; /* Match the navbar background color */
-}
-
-/* Dropdown items styling */
-nav .dropdown-item {
-  color: #fff;
-}
-
-/* Dropdown item hover styling */
-nav .dropdown-item:hover {
-  background-color: #555; /* Slightly lighter for hover effect */
-}
-
-/* Disabled link styling */
-nav .nav-link.disabled {
-  color: #6c757d; /* Match Bootstrap disabled color */
-}
-
-/* Form styling inside the navbar */
-nav .d-flex {
-  margin-left: auto;
-}
-
-nav .form-control {
-  margin-right: 0.5rem;
-}
-
-nav .btn-outline-success {
-  color: #fff;
-  border-color: #fff;
-}
-
-nav .btn-outline-success:hover {
-  background-color: #fff;
-  color: #333;
-}
-
-/* Adjust body padding to prevent content from hiding under fixed navbar */
-body {
-  padding-top: 200px; /* Adjust based on your navbar height */
-}
+/* Responsive form */
 .auth-form {
   background-color: #f8f9fa;
   border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  padding: 1.5rem;
+  width: 100%;
 }
 
 .auth-form h2 {
@@ -105,97 +93,75 @@ body {
   border-radius: 0.25rem;
 }
 
-.auth-form .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
+/* Navbar styles */
+nav.navbar {
+  background-color: #333;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
 }
 
-.auth-form .btn-primary:disabled {
-  background-color: #c6c6c6;
-  border-color: #c6c6c6;
+nav .container-fluid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.auth-form .btn-primary:hover {
-  background-color: #0069d9;
-  border-color: #0062cc;
-}
-/* App.css */
-.logo {
-  height: 40px;
-  filter: none; /* Ensure logo is displayed correctly */
+nav .navbar-brand {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-decoration: none;
 }
 
-.navbar {
-  font-family: 'Roboto', sans-serif; /* Apply Roboto font */
+nav .nav-link {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 0.5rem;
 }
 
-.nav-item {
-  position: relative; /* Necessary for positioning pseudo-elements */
-  margin: 0 10px;
-  padding: 10px; /* Padding for better spacing */
-  font-weight: 400; /* Default font weight */
-  transition: color 0.3s ease, font-weight 0.3s ease; /* Smooth color and font-weight transitions */
+nav .nav-link.active {
+  font-weight: bold;
 }
 
-.nav-item::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 3px; /* Height of the underline */
-  background-color: #d2002d; /* Red underline color */
-  border-radius: 50px; /* Rounded edges */
-  transition: width 0.3s ease; /* Smooth width transition */
+nav .nav-link:hover {
+  text-decoration: none;
 }
 
-.nav-item:hover::after {
-  width: 100%; /* Full width on hover */
+nav .dropdown-menu {
+  background-color: #333;
 }
 
-.nav-item:hover {
-  color: #d2002d; /* Highlight color on hover */
-  font-weight: 700; /* Make text bold on hover */
+nav .dropdown-item {
+  color: #fff;
 }
 
-/* Remove red underline from icons */
-.nav-link {
-  font-size: 18px; /* Adjust size for icons */
+nav .dropdown-item:hover {
+  background-color: #555;
 }
 
-.nav-link:hover {
-  color: #d2002d; /* Highlight color on hover */
+nav .nav-link.disabled {
+  color: #6c757d;
 }
 
-.user-dropdown .dropdown-menu {
-  background-color: #343a40; /* Dark background for dropdown menu */
-  border: none;
-}
-
-.user-dropdown .dropdown-item {
-  color: #f8f9fa;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.user-dropdown .dropdown-item:hover {
-  background-color: #d2002d; /* Highlight color on hover */
-  color: white;
-}
-/* Minimalistic Footer styling */
+/* Footer styles */
 .footer_base {
-  background-color: #343a40; /* Dark background */
-  color: #f8f9fa; /* Light text color */
-  padding: 20px 0; /* Adjust padding as needed */
+  background-color: #343a40;
+  color: #f8f9fa;
+  padding: 20px 0;
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .footer_content_wrap {
-  max-width: 1200px; /* Set a max-width for better control */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 15px;
 }
@@ -207,37 +173,77 @@ body {
   flex-wrap: wrap;
 }
 
-.footer_text_left {
-  flex: 1;
-  text-align: left;
-  font-size: 0.875rem;
-}
-
 .footer_center {
   flex: 1;
   text-align: center;
 }
 
-.footer_text_right {
-  flex: 1;
-  text-align: right;
-}
-
-.footer_email {
-  display: block;
-  color: #f8f9fa;
-  text-decoration: none;
-  font-size: 1rem;
-  margin-bottom: 10px;
-}
 .logo {
   height: 100px;
   width: 100px;
 }
+
 .loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Full viewport height */
-  background-color: #f5f5f5; /* Optional: background color */
+  height: auto;
+}
+
+.bg-light {
+  background: linear-gradient(to right, #fbc2eb, #a6c0fe);
+}
+
+/* Nav items styling */
+.nav-item {
+  position: relative;
+  margin: 0 10px;
+  padding: 10px;
+  font-weight: 400;
+  transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+.nav-item::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background-color: #d2002d;
+  border-radius: 50px;
+  transition: width 0.3s ease;
+}
+
+.nav-item:hover::after {
+  width: 100%;
+}
+
+.nav-item:hover {
+  color: #d2002d;
+  font-weight: 700;
+}
+
+.nav-link {
+  font-size: 18px;
+}
+
+.nav-link:hover {
+  color: #d2002d;
+}
+
+.user-dropdown .dropdown-menu {
+  background-color: #343a40;
+  border: none;
+}
+
+.user-dropdown .dropdown-item {
+  color: #f8f9fa;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.user-dropdown .dropdown-item:hover {
+  background-color: #d2002d;
+  color: white;
 }

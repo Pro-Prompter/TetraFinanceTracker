@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table, Button, Form, Modal } from "react-bootstrap";
 import { databases } from '../lib/appwrite';
 import Swal from 'sweetalert2';
+import Footer from "./Footer";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -109,13 +110,14 @@ const Users = () => {
               <td>{user.Role}</td>
               <td>{user.Status}</td>
               <td>
-                <Button variant="warning" onClick={() => handleShow("edit", user)} className="mr-2">Edit</Button>
+                <Button variant="warning" onClick={() => handleShow("edit", user)} className="mx-2">Edit</Button>
                 <Button variant="danger" onClick={() => handleDelete(user.$id)}>Delete</Button>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
+      <Footer />
 
       {/* Modal for Add/Edit User */}
       <Modal show={showModal} onHide={handleClose}>

@@ -72,9 +72,7 @@ src/
 │   ├── Dashboard.jsx
 │   ├── Footer.jsx
 │   ├── Navbar.jsx
-│   ├── PendingPayments.jsx
 │   ├── Reports.jsx
-│   ├── RevenueSources.jsx
 │   ├── Savings.jsx
 │   ├── Settings.jsx
 │   ├── TeamCommissions.jsx
