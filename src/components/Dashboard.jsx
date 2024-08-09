@@ -99,6 +99,29 @@ const Dashboard = () => {
     ],
   };
 
+  // Easter egg functionality
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://rawgit.com/WeiChiaChang/Easter-egg/master/easter-eggs-collection.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    const handleKeyUp = (event) => {
+      if (event.key === 'h' || event.key === 'i') {
+        if (event.key === 'i') {
+          console.log('Easter egg triggered!'); // You can replace this with a more visible effect
+        }
+      }
+    };
+
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.body.removeChild(script);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
   return (
     <div>
       {status === "loading" ? (

@@ -8,6 +8,7 @@ import Clients from './components/Clients';
 import Transactions from './components/Transactions';
 import Savings from './components/Savings';
 import TeamCommissions from './components/TeamCommissions';
+import Profile from './components/Profile';
 import Reports from './components/Reports';
 import Users from './components/Users';
 import Settings from './components/Settings';
@@ -25,13 +26,17 @@ const App = () => {
   if (status === 'loading') {
     return (
       <div className="loading-container">
-        <ClipLoader size={150} color={"#d2002d"} loading={true} />
+        <ClipLoader size={150} color="#d2002d" loading={true} />
       </div>
     );
   }
 
   if (status === 'failed') {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="error-container">
+        <p>Error: {error}</p>
+      </div>
+    );
   }
 
   return (
@@ -60,6 +65,8 @@ const App = () => {
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/users" element={<Users />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="*" element={<Navigate to="/" />} /> {/* Default to Dashboard for unknown routes */}
                 </Routes>
               </div>
             </>
