@@ -1,15 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import authService from './auth';
-
+import auth from './auth';
 // Thunks
 export const checkAuth = createAsyncThunk(
     'auth/checkAuth',
     async (_, { rejectWithValue }) => {
         try {
-            const user = await authService.getCurrentUser();
-            return { authenticated: !!user };
+           const res = await auth.getCurrentUser();
+            if(res) {
+
+                return { authenticated: true};
+            }
+            return {authenticated : false}
         } catch (error) {
-            return rejectWithValue('Failed to check authentication');
+            return {authenticated : false}
         }
     }
 );
@@ -18,9 +21,13 @@ export const login = createAsyncThunk(
     'auth/login',
     async ({ email, password }, { rejectWithValue }) => {
         try {
-            await authService.login({ email, password });
-            return { authenticated: true };
+           const res = await auth.login({ email, password });
+           if(res) {
+               return { authenticated: true };
+           }
+           return { authenticated : false}
         } catch (error) {
+            alert(error)
             return rejectWithValue(error.message);
         }
     }
@@ -30,7 +37,7 @@ export const signup = createAsyncThunk(
     'auth/signup',
     async ({ email, password, name }, { rejectWithValue }) => {
         try {
-            await authService.createAccount({ email, password, name });
+            await auth.createAccount({ email, password, name });
             return { authenticated: true };
         } catch (error) {
             return rejectWithValue(error.message);
@@ -42,7 +49,7 @@ export const logout = createAsyncThunk(
     'auth/logout',
     async (_, { rejectWithValue }) => {
         try {
-            await authService.logout();
+            await auth.logout();
             return { authenticated: false };
         } catch (error) {
             return rejectWithValue(error.message);
@@ -75,9 +82,9 @@ const authSlice = createSlice({
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(login.fulfilled, (state) => {
+            .addCase(login.fulfilled, (state , action) => {
                 state.status = 'succeeded';
-                state.isAuthenticated = true;
+                state.isAuthenticated = action.payload.authenticated;
             })
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';

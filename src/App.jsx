@@ -23,13 +23,13 @@ const App = () => {
     dispatch(checkAuth());
   }, [dispatch]);
 
-  if (status === 'loading') {
-    return (
-      <div className="loading-container">
-        <ClipLoader size={150} color="#d2002d" loading={true} />
-      </div>
-    );
-  }
+    if (status === 'loading') {
+      return (
+        <div className="loading-container">
+          <ClipLoader size={150} color="#d2002d" loading={true} />
+        </div>
+      );
+    }
 
   if (status === 'failed') {
     return (

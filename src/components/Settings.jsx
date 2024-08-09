@@ -9,18 +9,16 @@ const Settings = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      await dispatch(checkAuth());
-    };
-    checkSession();
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(checkAuth())
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login'); // Redirect to login if not authenticated
-    }
-  }, [isAuthenticated, navigate]);
+  // }, [dispatch]);
+  
+  if (!isAuthenticated) {
+    console.log("user is not authorized")
+    navigate('/login'); // Redirect to login if not authenticated
+  }
+
 
   const handleLogout = async () => {
     try {
