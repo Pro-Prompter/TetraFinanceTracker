@@ -4,20 +4,8 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition: background 0.3s ease; /* Smooth transition for background changes */
+  transition: background 0.3s ease, color 0.3s ease;
   padding-top: 200px;
-}
-
-/* Light mode styling */
-.light-mode {
-  background: linear-gradient(to right, #fbc2eb, #a6c0fe);
-  color: #000;
-}
-
-/* Dark mode styling */
-.dark-mode {
-  background: linear-gradient(to right, #333, #666);
-  color: #fff;
 }
 
 /* Ensure full-page gradient */
@@ -27,53 +15,65 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: inherit; /* Inherit gradient from light-mode or dark-mode */
+  position: relative;
+  /* Ensure relative positioning for the gradient */
 }
 
-/* Styling for card */
+/* Styling for card with gradient background effect */
 .auth-card {
   border: 0;
   border-radius: 0.5rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  position: relative; /* Ensure positioning for theme toggle button */
-  padding: 2rem; /* Add padding for better spacing */
+  position: relative;
+  /* Ensure positioning for pseudo-elements */
+  padding: 2rem;
+  /* Add padding for better spacing */
+  background: #fff;
+  /* Ensure card background contrasts well */
+  overflow: hidden;
+  /* Ensure pseudo-elements do not overflow */
 }
 
-.card-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Gradient background effect */
+.auth-card::after,
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: conic-gradient(from 180deg, red, orange, yellow, green, blue, indigo, violet);
+  background-size: 300%;
+  animation: spin 3s linear infinite;
+  z-index: -1;
+  /* Ensure gradient is behind card content */
+}
+
+.auth-card::before {
+  filter: blur(1.5rem);
+  opacity: 0.5;
+}
+
+/* Animation for the gradient background */
+@keyframes spin {
+  to {
+    background-position: 0deg 50%;
+  }
 }
 
 /* Center and style the buttons */
 .btn-animate {
   transition: all 0.3s ease;
-  width: 100%; /* Make buttons full width */
-  max-width: 400px; /* Limit maximum width */
+  width: 100%;
+  /* Make buttons full width */
+  max-width: 400px;
+  /* Limit maximum width */
 }
 
 .btn-animate:hover {
   background-color: #0056b3;
   transform: scale(1.05);
-}
-
-/* Toggle button styling */
-.theme-toggle-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: transparent; /* Remove black background */
-  color: inherit; /* Inherit text color */
-  border: none;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
-  font-size: 1.5rem;
-  transition: color 0.3s ease, background-color 0.3s ease;
-}
-
-.theme-toggle-btn:hover {
-  color: #d2002d; /* Change color on hover for visibility */
 }
 
 /* Responsive form */
@@ -142,10 +142,6 @@ nav .dropdown-item {
 
 nav .dropdown-item:hover {
   background-color: #555;
-}
-
-nav .nav-link.disabled {
-  color: #6c757d;
 }
 
 /* Footer styles */

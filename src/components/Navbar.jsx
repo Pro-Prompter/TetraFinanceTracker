@@ -1,17 +1,32 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { FaCog, FaUsers, FaUserCircle } from "react-icons/fa";
+import { logout } from "../lib/redux/authSlice"; 
 import "../App.css";
 
 const NavigationBar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout());
+      navigate("/login"); // Redirect to login after logout
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Optionally handle logout failure (e.g., show an alert)
+    }
+  };
+
   return (
     <Navbar bg="dark" variant="dark" expand="lg" fixed="top" className="w-100">
       <Navbar.Brand as={Link} to="/">
         <img
           src="/assets/Tetra Studio Inverted.png"
           alt="Tetra Studio Logo"
-          className="logo" // Custom class for logo
+          className="logo"
           height={100}
           width={40}
         />
@@ -28,9 +43,7 @@ const NavigationBar = () => {
           <Nav.Link as={Link} to="/transactions" className="nav-item">
             Transactions
           </Nav.Link>
-          <Nav.Link as={Link} to="/savings" className="nav-item">
-            Savings
-          </Nav.Link>
+
           <Nav.Link as={Link} to="/team-commissions" className="nav-item">
             Commissions
           </Nav.Link>
@@ -55,9 +68,7 @@ const NavigationBar = () => {
               <FaCog className="mr-2" /> Settings
             </NavDropdown.Item>
             <NavDropdown.Divider />
-            <NavDropdown.Item as={Link} to="/logout">
-              Logout
-            </NavDropdown.Item>
+            <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
           </NavDropdown>
         </Nav>
       </Navbar.Collapse>

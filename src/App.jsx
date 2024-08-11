@@ -6,7 +6,6 @@ import NavigationBar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import Clients from './components/Clients';
 import Transactions from './components/Transactions';
-import Savings from './components/Savings';
 import TeamCommissions from './components/TeamCommissions';
 import Profile from './components/Profile';
 import Reports from './components/Reports';
@@ -60,7 +59,7 @@ const App = () => {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/savings" element={<Savings />} />
+                  
                   <Route path="/team-commissions" element={<TeamCommissions />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/users" element={<Users />} />

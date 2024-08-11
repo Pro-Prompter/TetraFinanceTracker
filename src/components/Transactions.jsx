@@ -23,10 +23,10 @@ const Transactions = () => {
     Amount: "",
     Type: "",
     Comments: "",
-    Currency: "PKR",
-    Status: "", // Add status field
+    Currency: "USD",
+    Status: "",
   });
-  const [filterStatus, setFilterStatus] = useState("All"); // Filter state
+  const [filterStatus, setFilterStatus] = useState("All");
 
   useEffect(() => {
     dispatch(fetchTransactions());
@@ -34,18 +34,18 @@ const Transactions = () => {
 
   const handleShow = (mode, transaction = {}) => {
     setModalMode(mode);
-    if (mode === "edit" && transaction) {
-      setCurrentTransaction({ ...transaction });
-    } else {
-      setCurrentTransaction({
-        Date: "",
-        Amount: "",
-        Type: "",
-        Comments: "",
-        Currency: "USD",
-        Status: "", // Reset status
-      });
-    }
+    setCurrentTransaction(
+      mode === "edit" && transaction
+        ? { ...transaction }
+        : {
+            Date: "",
+            Amount: "",
+            Type: "",
+            Comments: "",
+            Currency: "USD",
+            Status: "",
+          }
+    );
     setShowModal(true);
   };
 
@@ -57,7 +57,7 @@ const Transactions = () => {
       Type: "",
       Comments: "",
       Currency: "USD",
-      Status: "", // Reset status
+      Status: "",
     });
   };
 
@@ -70,7 +70,7 @@ const Transactions = () => {
       Type: currentTransaction.Type,
       Comments: currentTransaction.Comments,
       Currency: currentTransaction.Currency,
-      Status: currentTransaction.Status, // Include status
+      Status: currentTransaction.Status,
     };
 
     try {
@@ -117,22 +117,27 @@ const Transactions = () => {
     }
   };
 
-  // Filter transactions based on selected status
-  const filteredTransactions = transactions.filter((transaction) => {
-    if (filterStatus === "All") return true;
-    return transaction.Status === filterStatus;
-  });
+  const filteredTransactions = transactions.filter((transaction) =>
+    filterStatus === "All" ? true : transaction.Status === filterStatus
+  );
 
   return (
     <div>
       <h1>Transactions</h1>
-      <div className="mb-3">
-        <Form.Group controlId="formFilterStatus">
-          <Form.Label>Filter by Status</Form.Label>
+      <div className="d-flex align-items-center mb-3">
+        <Button
+          variant="primary"
+          onClick={() => handleShow("add")}
+          className="my-4"
+        >
+          Add Transaction
+        </Button>
+        <Form.Group controlId="formFilterStatus" className="mb-0 mx-4">
           <Form.Control
             as="select"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
+            size="sm"
           >
             <option value="All">All</option>
             <option value="Pending">Pending</option>
@@ -140,9 +145,6 @@ const Transactions = () => {
             <option value="Unpaid">Unpaid</option>
           </Form.Control>
         </Form.Group>
-        <Button variant="primary" onClick={() => handleShow("add")} className="my-4">
-          Add Transaction
-        </Button>
       </div>
       <Table striped bordered hover className="mt-3">
         <thead>
@@ -152,7 +154,7 @@ const Transactions = () => {
             <th>Amount</th>
             <th>Type</th>
             <th>Comments</th>
-            <th>Status</th> {/* Add Status column */}
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -180,7 +182,7 @@ const Transactions = () => {
                 </td>
                 <td>{transaction.Type}</td>
                 <td>{transaction.Comments}</td>
-                <td>{transaction.Status}</td> {/* Add Status */}
+                <td>{transaction.Status}</td>
                 <td>
                   <Button
                     variant="warning"
@@ -202,8 +204,7 @@ const Transactions = () => {
           )}
         </tbody>
       </Table>
-          <Footer />
-      {/* Modal for Add/Edit Transaction */}
+      <Footer />
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -253,11 +254,8 @@ const Transactions = () => {
                 }
               >
                 <option value="">Select Type</option>
-                {["Income", "Expense"].map((Type) => (
-                  <option key={Type} value={Type}>
-                    {Type}
-                  </option>
-                ))}
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
               </Form.Control>
             </Form.Group>
             <Form.Group controlId="formCurrency">
@@ -301,7 +299,7 @@ const Transactions = () => {
               <Form.Control
                 as="textarea"
                 rows={3}
-                placeholder="Enter comments"
+                placeholder="Enter Comments"
                 value={currentTransaction.Comments}
                 onChange={(e) =>
                   setCurrentTransaction({

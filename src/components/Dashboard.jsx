@@ -19,7 +19,7 @@ import {
 import Footer from "./Footer";
 import "chartjs-plugin-autocolors"; // Import the plugin
 
-// Register the components needed for Chart.js
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -99,7 +99,7 @@ const Dashboard = () => {
     ],
   };
 
-  // Easter egg functionality
+  // Easter egg
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://rawgit.com/WeiChiaChang/Easter-egg/master/easter-eggs-collection.js";
@@ -109,7 +109,7 @@ const Dashboard = () => {
     const handleKeyUp = (event) => {
       if (event.key === 'h' || event.key === 'i') {
         if (event.key === 'i') {
-          console.log('Easter egg triggered!'); // You can replace this with a more visible effect
+          console.log('Hey!! You Found it!!');
         }
       }
     };

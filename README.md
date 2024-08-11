@@ -6,7 +6,6 @@ This project is a finance management system designed for Tetra Studio to handle 
 ## Features
 
 - **Client Payments:** Track payments made by clients, pending payments, and total amounts.
-- **Savings Management:** Keep track of savings.
 - **Team Member Commissions:** Calculate and manage commissions for team members.
 - **Money Sources:** Track the sources of incoming money.
 - **Dashboard:** Overview of all financial data.
@@ -73,7 +72,6 @@ src/
 │   ├── Footer.jsx
 │   ├── Navbar.jsx
 │   ├── Reports.jsx
-│   ├── Savings.jsx
 │   ├── Settings.jsx
 │   ├── TeamCommissions.jsx
 │   ├── Transactions.jsx

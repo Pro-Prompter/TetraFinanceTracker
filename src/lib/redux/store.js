@@ -5,6 +5,7 @@ import authReducer from './authSlice';
 import transactionsReducer from './transactionsSlice';
 import clientsReducer from './clientsSlice';
 import profileReducer from './profileSlice';
+import commissionsReducer from './commissionsSlice';
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     transactions: transactionsReducer,
     clients: clientsReducer,
     profile: profileReducer,
+    commissions: commissionsReducer,
   },
 });
 
