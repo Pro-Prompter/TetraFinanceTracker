@@ -172,7 +172,6 @@ const TeamCommissions = () => {
           })}
         </tbody>
       </Table>
-      <Footer />
 
       {/* Add/Edit Commission Modal */}
       <Modal show={showModal} onHide={handleClose}>

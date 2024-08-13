@@ -123,7 +123,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div>
+    <div className="pt">
       {status === "loading" ? (
         <div className="text-center mt-5">
           <Spinner animation="border" variant="primary" />
@@ -187,7 +187,6 @@ const Dashboard = () => {
           </Row>
         </>
       )}
-      <Footer />
     </div>
   );
 };

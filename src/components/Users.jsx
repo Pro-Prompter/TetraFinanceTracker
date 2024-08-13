@@ -117,7 +117,6 @@ const Users = () => {
           ))}
         </tbody>
       </Table>
-      <Footer />
 
       {/* Modal for Add/Edit User */}
       <Modal show={showModal} onHide={handleClose}>

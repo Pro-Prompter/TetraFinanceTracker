@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import { fetchClients, addClient, updateClient, deleteClient } from '../lib/redux/clientsSlice';
 import Footer from './Footer';
+import "../App.css"
 
 const Clients = () => {
   const dispatch = useDispatch();
@@ -141,7 +142,7 @@ const Clients = () => {
   });
 
   return (
-    <div>
+    <div className='pt'>
       <h1>Clients</h1>
       <div className="d-flex flex-column mb-4">
         <Button variant="primary" onClick={handleAddShow} className='my-4'>
@@ -227,7 +228,6 @@ const Clients = () => {
           ))}
         </tbody>
       </Table>
-      <Footer />
 
       {/* Add Client Modal */}
       <Modal show={showAddModal} onHide={handleAddClose}>

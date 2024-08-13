@@ -81,7 +81,7 @@ const Profile = () => {
   };
 
   return (
-    <div>
+    <div className="pt">
       {status === "loading" ? (
         <div className="text-center mt-5">
           <Spinner animation="border" variant="primary" />
@@ -130,7 +130,6 @@ const Profile = () => {
           </Row>
         </>
       )}
-      <Footer />
     </div>
   );
 };

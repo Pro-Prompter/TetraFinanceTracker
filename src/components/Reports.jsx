@@ -65,7 +65,7 @@ const Reports = () => {
   };
 
   return (
-    <div>
+    <div className='pt'>
       <h1>Reports</h1>
       <div className="mb-3">
         <Button onClick={() => setTimePeriod('daily')} className='btn btn-primary mx-2'>Daily</Button>
@@ -94,7 +94,6 @@ const Reports = () => {
           ))}
         </tbody>
       </Table>
-      <Footer />
     </div>
   );
 };

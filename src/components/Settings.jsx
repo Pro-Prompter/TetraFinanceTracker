@@ -31,7 +31,7 @@ const Settings = () => {
   };
 
   return (
-    <div>
+    <div className='pt'>
       <Card>
         <Card.Body>
           <h2>Settings</h2>

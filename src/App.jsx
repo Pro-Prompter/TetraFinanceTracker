@@ -13,6 +13,7 @@ import Users from './components/Users';
 import Settings from './components/Settings';
 import Auth from './lib/Auth';
 import ClipLoader from 'react-spinners/ClipLoader';
+import Footer from './components/Footer';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -54,12 +55,11 @@ const App = () => {
           element={isAuthenticated ? (
             <>
               <NavigationBar />
-              <div className="container mt-3">
+              <div className="container pt">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/clients" element={<Clients />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  
+                  <Route path="/transactions" element={<Transactions />} />                  
                   <Route path="/team-commissions" element={<TeamCommissions />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/users" element={<Users />} />
