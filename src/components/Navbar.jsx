@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { FaCog, FaUsers, FaUserCircle } from "react-icons/fa";
-import { logout } from "../lib/redux/authSlice"; 
+import { logout } from "../lib/redux/authSlice";
 import "../App.css";
 
 const NavigationBar = () => {

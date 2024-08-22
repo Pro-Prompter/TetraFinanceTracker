@@ -17,9 +17,7 @@ import {
   Filler,
 } from "chart.js";
 import Footer from "./Footer";
-import "chartjs-plugin-autocolors"; // Import the plugin
-
-
+import "chartjs-plugin-autocolors"; 
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -68,7 +66,7 @@ const Dashboard = () => {
           .map((t) => parseFloat(t.Amount))
           .reverse(),
         borderColor: "#00C853",
-        backgroundColor: "rgba(0, 200, 83, 0.2)", // Transparent green
+        backgroundColor: "rgba(0, 200, 83, 0.2)", 
         borderWidth: 1,
         fill: true,
       },
@@ -79,7 +77,7 @@ const Dashboard = () => {
           .map((t) => parseFloat(t.Amount))
           .reverse(),
         borderColor: "#D50032",
-        backgroundColor: "rgba(213, 0, 50, 0.2)", // Transparent red
+        backgroundColor: "rgba(213, 0, 50, 0.2)", 
         borderWidth: 1,
         fill: true,
       },
@@ -92,8 +90,8 @@ const Dashboard = () => {
       {
         label: "Total Amount",
         data: [totalIncome, totalExpenses],
-        backgroundColor: ["rgba(0, 200, 83, 0.2)", "rgba(213, 0, 50, 0.2)"], // Transparent colors
-        borderColor: ["#00C853", "#D50032"], // Corresponding borders
+        backgroundColor: ["rgba(0, 200, 83, 0.2)", "rgba(213, 0, 50, 0.2)"], 
+        borderColor: ["#00C853", "#D50032"], 
         borderWidth: 1,
       },
     ],
@@ -102,23 +100,24 @@ const Dashboard = () => {
   // Easter egg
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "https://rawgit.com/WeiChiaChang/Easter-egg/master/easter-eggs-collection.js";
+    script.src =
+      "https://rawgit.com/WeiChiaChang/Easter-egg/master/easter-eggs-collection.js";
     script.async = true;
     document.body.appendChild(script);
 
     const handleKeyUp = (event) => {
-      if (event.key === 'h' || event.key === 'i') {
-        if (event.key === 'i') {
-          console.log('Hey!! You Found it!!');
+      if (event.key === "h" || event.key === "i") {
+        if (event.key === "i") {
+          console.log("Hey!! You Found it!!");
         }
       }
     };
 
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
       document.body.removeChild(script);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
 
@@ -150,7 +149,7 @@ const Dashboard = () => {
               className="d-flex justify-content-center align-items-center"
             >
               <div className="empty-space"></div>{" "}
-              {/* Empty space in the middle */}
+              {}
             </Col>
             <Col md={3}>
               <motion.div
