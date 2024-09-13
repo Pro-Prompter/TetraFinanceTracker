@@ -71,7 +71,6 @@ src/
 │   ├── Dashboard.jsx
 │   ├── Footer.jsx
 │   ├── Navbar.jsx
-│   ├── Reports.jsx
 │   ├── Settings.jsx
 │   ├── TeamCommissions.jsx
 │   ├── Transactions.jsx

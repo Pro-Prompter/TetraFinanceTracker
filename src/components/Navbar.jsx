@@ -47,9 +47,6 @@ const NavigationBar = () => {
           <Nav.Link as={Link} to="/team-commissions" className="nav-item">
             Commissions
           </Nav.Link>
-          <Nav.Link as={Link} to="/reports" className="nav-item">
-            Reports
-          </Nav.Link>
         </Nav>
         <Nav className="ml-auto">
           <NavDropdown

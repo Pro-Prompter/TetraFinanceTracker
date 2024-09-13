@@ -8,7 +8,6 @@ import Clients from "./components/Clients";
 import Transactions from "./components/Transactions";
 import TeamCommissions from "./components/TeamCommissions";
 import Profile from "./components/Profile";
-import Reports from "./components/Reports";
 import Users from "./components/Users";
 import Settings from "./components/Settings";
 import Auth from "./lib/Auth";
@@ -68,7 +67,7 @@ const App = () => {
                       path="/team-commissions"
                       element={<TeamCommissions />}
                     />
-                    <Route path="/reports" element={<Reports />} />
+
                     <Route path="/users" element={<Users />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/profile" element={<Profile />} />
