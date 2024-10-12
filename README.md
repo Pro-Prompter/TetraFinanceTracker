@@ -20,6 +20,7 @@ This project is a finance management system designed for Tetra Studio to handle 
 - **API Calls:** Axios
 - **Notifications:** SweetAlert2
 - **Backend:** Appwrite
+- **Deployment** Vercel
 
 ## Getting Started
 
