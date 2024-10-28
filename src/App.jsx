@@ -7,7 +7,6 @@ import Dashboard from "./components/Dashboard";
 import Clients from "./components/Clients";
 import Transactions from "./components/Transactions";
 import TeamCommissions from "./components/TeamCommissions";
-import Profile from "./components/Profile";
 import Users from "./components/Users";
 import Settings from "./components/Settings";
 import Auth from "./lib/Auth";
@@ -70,7 +69,7 @@ const App = () => {
 
                     <Route path="/users" element={<Users />} />
                     <Route path="/settings" element={<Settings />} />
-                    <Route path="/profile" element={<Profile />} />
+
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                 </div>

@@ -2,10 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button, Form, Alert, Spinner, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  login as loginThunk,
-  signup as signupThunk,
-} from "../lib/redux/authSlice";
+import { login as loginThunk, signup as signupThunk } from "../lib/redux/authSlice";
 import "../App.css";
 
 const Auth = ({ mode }) => {
@@ -18,16 +15,10 @@ const Auth = ({ mode }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      if (mode === "login") {
-        await dispatch(loginThunk({ email, password }));
-      } else if (mode === "signup") {
-        await dispatch(signupThunk({ email, password, name: username }));
-      }
-      navigate("/"); // Redirect after successful auth
-    } catch (err) {
-      console.error("Authentication failed:", err);
-      // Handle error here if necessary
+    if (mode === "login") {
+      await dispatch(loginThunk({ email, password }));
+    } else if (mode === "signup") {
+      await dispatch(signupThunk({ email, password, name: username }));
     }
   };
 
@@ -37,13 +28,33 @@ const Auth = ({ mode }) => {
     }
   }, [isAuthenticated, navigate]);
 
+  // Function to generate a random color in hex format
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+  // Function to create a random gradient
+  const generateRandomGradient = () => {
+    const color1 = getRandomColor();
+    const color2 = getRandomColor();
+    const angle = Math.floor(Math.random() * 360);
+    return `linear-gradient(${angle}deg, ${color1}, ${color2})`;
+  };
+
+  useEffect(() => {
+    document.querySelector('.auth-page').style.background = generateRandomGradient();
+  }, []);
+
   return (
     <div className="auth-page">
       <Card className="auth-card">
         <Card.Body>
-          <h2 className="text-center mb-4">
-            {mode === "login" ? "Login" : "Signup"}
-          </h2>
+          <h2 className="text-center mb-4">{mode === "login" ? "Login" : "Signup"}</h2>
           <Form onSubmit={handleSubmit} className="auth-form">
             {mode === "signup" && (
               <Form.Group controlId="formBasicUsername">
@@ -81,15 +92,9 @@ const Auth = ({ mode }) => {
               variant="primary"
               type="submit"
               disabled={status === "loading"}
-              className="btn-primary w-100 my-4"
+              className="btn-shine-blue w-100 my-4"
             >
-              {status === "loading" ? (
-                <Spinner animation="border" />
-              ) : mode === "login" ? (
-                "Login"
-              ) : (
-                "Signup"
-              )}
+              {status === "loading" ? <Spinner animation="border" /> : (mode === "login" ? "Login" : "Signup")}
             </Button>
             {error && <Alert variant="danger">{error}</Alert>}
           </Form>

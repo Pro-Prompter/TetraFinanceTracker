@@ -1,18 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import auth from './auth';
+
 // Thunks
 export const checkAuth = createAsyncThunk(
     'auth/checkAuth',
     async (_, { rejectWithValue }) => {
         try {
-           const res = await auth.getCurrentUser();
-            if(res) {
-
-                return { authenticated: true};
-            }
-            return {authenticated : false}
+            const res = await auth.getCurrentUser();
+            return { authenticated: Boolean(res) };
         } catch (error) {
-            return {authenticated : false}
+            return rejectWithValue(error.message);
         }
     }
 );
@@ -21,13 +18,9 @@ export const login = createAsyncThunk(
     'auth/login',
     async ({ email, password }, { rejectWithValue }) => {
         try {
-           const res = await auth.login({ email, password });
-           if(res) {
-               return { authenticated: true };
-           }
-           return { authenticated : false}
+            const res = await auth.login({ email, password });
+            return { authenticated: true };
         } catch (error) {
-            alert(error)
             return rejectWithValue(error.message);
         }
     }
@@ -62,7 +55,7 @@ const authSlice = createSlice({
     name: 'auth',
     initialState: {
         isAuthenticated: false,
-        status: 'idle',
+        status: 'idle', // idle | loading | succeeded | failed
         error: null,
     },
     reducers: {},
@@ -82,9 +75,9 @@ const authSlice = createSlice({
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(login.fulfilled, (state , action) => {
+            .addCase(login.fulfilled, (state) => {
                 state.status = 'succeeded';
-                state.isAuthenticated = action.payload.authenticated;
+                state.isAuthenticated = true;
             })
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';

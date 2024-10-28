@@ -55,9 +55,7 @@ const NavigationBar = () => {
             align="end"
             className="user-dropdown"
           >
-            <NavDropdown.Item as={Link} to="/profile">
-              <FaUserCircle className="mr-2" /> Profile
-            </NavDropdown.Item>
+            
             <NavDropdown.Item as={Link} to="/users">
               <FaUsers className="mr-2" /> Users
             </NavDropdown.Item>

@@ -1,109 +1,172 @@
+/* Root variables for theme colors */
+:root {
+  --primary-color: #0056b3; /* Primary blue */
+  --secondary-color: #d2002d; /* Secondary red */
+  --light-bg: #f8f9fa; /* Light background */
+  --dark-bg: #343a40; /* Dark background */
+  --text-color: #343a40; /* Text color */
+  --alert-danger: #f8d7da; /* Danger alert color */
+  --alert-success: #d4edda; /* Success alert color */
+  --border-color: #ced4da; /* Border color */
+}
+
 /* Global styles */
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Ensure full-page gradient */
+/* Full-page gradient background */
 .auth-page {
   height: 100vh;
-  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  /* Ensure relative positioning for the gradient */
+  padding: 0 1rem;
 }
 
-/* Styling for card with gradient background effect */
+/* Card styling */
 .auth-card {
-  border: 0;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: relative;
-  /* Ensure positioning for pseudo-elements */
   padding: 2rem;
-  /* Add padding for better spacing */
-  background: #fff;
-  /* Ensure card background contrasts well */
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+  background: transparent; /* Remove background color */
   overflow: hidden;
-  /* Ensure pseudo-elements do not overflow */
+  transition: transform 0.3s ease;
 }
 
-/* Gradient background effect */
-.auth-card::after,
-.auth-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: conic-gradient(from 180deg, red, orange, yellow, green, blue, indigo, violet);
-  background-size: 300%;
-  animation: spin 3s linear infinite;
-  z-index: -1;
-  /* Ensure gradient is behind card content */
+.auth-card:hover {
+  transform: scale(1.02); /* Subtle scaling effect on hover */
 }
 
-.auth-card::before {
-  filter: blur(1.5rem);
-  opacity: 0.5;
-}
-
-/* Animation for the gradient background */
-@keyframes spin {
-  to {
-    background-position: 0deg 50%;
-  }
-}
-
-/* Center and style the buttons */
-.btn-animate {
-  transition: all 0.3s ease;
-  width: 100%;
-  /* Make buttons full width */
-  max-width: 400px;
-  /* Limit maximum width */
-}
-
-.btn-animate:hover {
-  background-color: #0056b3;
-  transform: scale(1.05);
-}
-
-/* Responsive form */
+/* Form styling */
 .auth-form {
-  background-color: #f8f9fa;
-  border: 1px solid #ced4da;
+  background-color: var(--light-bg); /* Keep form background */
+  border: 1px solid var(--border-color);
   border-radius: 0.25rem;
   padding: 1.5rem;
   width: 100%;
 }
 
 .auth-form h2 {
-  color: #343a40;
+  color: var(--text-color);
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
-.auth-form .form-control {
+/* Button styling */
+.btn-animate, .btn-shine, .btn-shine-blue {
+  width: 100%;
+  max-width: 400px;
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  padding: 0.75rem; /* Added padding for better touch targets */
   border-radius: 0.25rem;
+}
+
+/* Primary button with animation */
+.btn-animate {
+  background-color: var(--primary-color);
+  color: white;
+  position: relative; /* For shine effect */
+}
+
+.btn-animate:hover {
+  background-color: var(--secondary-color);
+  transform: scale(1.05);
+}
+
+/* Shine effect for buttons */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--primary-color); /* Base color */
+  color: white; /* Text color */
+}
+
+.btn-shine::before, .btn-shine-blue::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  height: 300%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s ease;
+  z-index: 0;
+}
+
+.btn-shine:hover, .btn-shine-blue:hover {
+  background-color: #c82333; /* Darker red */
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); /* Glow effect */
+}
+
+.btn-shine:hover::before, .btn-shine-blue:hover::before {
+  transform: translate(-50%, -50%) scale(1); /* Scale effect on hover */
+  z-index: -1; /* Ensure it stays behind the button */
+}
+
+/* Additional shine effect */
+.btn-shine-blue {
+  background-color: var(--primary-color); /* Base color */
+  color: white; /* Text color */
+}
+
+.btn-shine-blue:hover {
+  box-shadow: 0 0 20px rgba(0, 86, 179, 0.8); /* Glow effect */
+}
+
+/* New shine effect for hover */
+.btn-shine-blue::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 300%;
+  height: 300%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.6s ease;
+  z-index: 1;
+}
+
+.btn-shine-blue:hover::after {
+  transform: translate(-50%, -50%) scale(1); /* Scale effect on hover */
+}
+
+/* Alert styles */
+.alert {
+  margin-bottom: 1rem;
+}
+
+/* Loading spinner container */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full height of the viewport */
+  padding-top: 20px;
 }
 
 /* Navbar styles */
 nav.navbar {
-  background-color: #333;
+  background-color: var(--dark-bg);
   color: #fff;
   padding: 0.5rem 1rem;
   position: fixed;
   top: 0;
-  left: 0;
   width: 100%;
   z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for navbar */
 }
 
 nav .container-fluid {
@@ -112,47 +175,21 @@ nav .container-fluid {
   align-items: center;
 }
 
-nav .navbar-brand {
-  color: #fff;
-  font-size: 1.25rem;
-  font-weight: 500;
-  text-decoration: none;
-}
-
 nav .nav-link {
   color: #fff;
-  text-decoration: none;
   margin: 0 0.5rem;
-}
-
-nav .nav-link.active {
-  font-weight: bold;
+  transition: color 0.3s ease;
 }
 
 nav .nav-link:hover {
   text-decoration: none;
 }
 
-nav .dropdown-menu {
-  background-color: #333;
-}
-
-nav .dropdown-item {
-  color: #fff;
-}
-
-nav .dropdown-item:hover {
-  background-color: #555;
-}
-
 /* Footer styles */
 .footer_base {
-  background-color: #343a40;
+  background-color: var(--dark-bg);
   color: #f8f9fa;
   padding: 20px 0;
-  /* position: fixed; */
-  bottom: 0;
-  left: 0;
   width: 100%;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -180,18 +217,12 @@ nav .dropdown-item:hover {
   width: 100px;
 }
 
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: auto;
+/* Responsive utility classes */
+.pt {
+  padding-top: 5rem;
 }
 
-.bg-light {
-  background: linear-gradient(to right, #fbc2eb, #a6c0fe);
-}
-
-/* Nav items styling */
+/* Nav item styles */
 .nav-item {
   position: relative;
   margin: 0 10px;
@@ -208,7 +239,7 @@ nav .dropdown-item:hover {
   transform: translateX(-50%);
   width: 0;
   height: 3px;
-  background-color: #d2002d;
+  background-color: var(--secondary-color);
   border-radius: 50px;
   transition: width 0.3s ease;
 }
@@ -218,20 +249,13 @@ nav .dropdown-item:hover {
 }
 
 .nav-item:hover {
-  color: #d2002d;
+  color: var(--secondary-color);
   font-weight: 700;
 }
 
-.nav-link {
-  font-size: 18px;
-}
-
-.nav-link:hover {
-  color: #d2002d;
-}
-
+/* User dropdown styles */
 .user-dropdown .dropdown-menu {
-  background-color: #343a40;
+  background-color: var(--dark-bg);
   border: none;
 }
 
@@ -241,10 +265,21 @@ nav .dropdown-item:hover {
 }
 
 .user-dropdown .dropdown-item:hover {
-  background-color: #d2002d;
+  background-color: var(--secondary-color);
   color: white;
 }
 
-.pt {
-  padding-top: 5rem ;
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .auth-card {
+    padding: 1.5rem; /* Adjust padding for smaller screens */
+  }
+
+  .footer_content_main {
+    flex-direction: column; /* Stack items on smaller screens */
+  }
+
+  .nav-item {
+    margin: 5px 0; /* Adjust margin for vertical stacking */
+  }
 }
