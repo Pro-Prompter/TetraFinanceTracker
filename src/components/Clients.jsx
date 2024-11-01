@@ -8,7 +8,6 @@ import {
   updateClient,
   deleteClient,
 } from "../lib/redux/clientsSlice";
-import Footer from "./Footer";
 import "../App.css";
 
 const Clients = () => {

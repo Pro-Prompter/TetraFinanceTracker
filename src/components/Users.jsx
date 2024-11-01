@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Form, Modal } from "react-bootstrap";
-import { databases } from '../lib/appwrite';
+import { databases } from '../lib/appwrite'; // Ensure this points to your Appwrite setup
 import Swal from 'sweetalert2';
-import Footer from "./Footer";
+import auth from '../lib/redux/auth'; // Import your auth utility
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
-  const [currentUser, setCurrentUser] = useState({ Name: "", Role: "", Status: "" });
+  const [currentUser, setCurrentUser] = useState({ Name: "", User_Name: "", Role: "" });
 
   const fetchUsers = async () => {
     try {
@@ -28,24 +28,24 @@ const Users = () => {
     if (mode === "edit" && user) {
       setCurrentUser({ ...user });
     } else {
-      setCurrentUser({ Name: "", Role: "", Status: "" });
+      setCurrentUser({ Name: "", User_Name: "", Role: "" });
     }
     setShowModal(true);
   };
 
   const handleClose = () => {
     setShowModal(false);
-    setCurrentUser({ Name: "", Role: "", Status: "" });
+    setCurrentUser({ Name: "", User_Name: "", Role: "" });
   };
 
   const handleSave = async () => {
     try {
       const documentData = {
+        User_Name: currentUser.User_Name,
         Name: currentUser.Name,
-        Role: currentUser.Role,
-        Status: currentUser.Status
+        Role: currentUser.Role
       };
-  
+
       if (modalMode === "add") {
         await databases.createDocument('66ae058300333732f99a', '66ae05a1002d7b4e35f7', 'unique()', documentData);
       } else if (modalMode === "edit") {
@@ -62,7 +62,7 @@ const Users = () => {
     }
   };  
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, userEmail) => {
     try {
       const result = await Swal.fire({
         title: "Are you sure?",
@@ -75,16 +75,27 @@ const Users = () => {
       });
 
       if (result.isConfirmed) {
+        // First, delete the user from the Users collection
         await databases.deleteDocument('66ae058300333732f99a', '66ae05a1002d7b4e35f7', id);
+
+        // Then, delete the user's account using their email
+        await auth.deleteAccount(userEmail); // Implement this function in your auth.js
+
         await Swal.fire({
           title: "Deleted!",
           text: "User has been deleted.",
           icon: "success"
         });
+
         fetchUsers();
       }
     } catch (error) {
       console.error("Error deleting user:", error);
+      await Swal.fire({
+        title: "Error!",
+        text: "There was a problem deleting the user.",
+        icon: "error"
+      });
     }
   };
 
@@ -97,8 +108,8 @@ const Users = () => {
           <tr>
             <th>#</th>
             <th>Name</th>
+            <th>User Name</th>
             <th>Role</th>
-            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -107,11 +118,11 @@ const Users = () => {
             <tr key={user.$id}>
               <td>{index + 1}</td>
               <td>{user.Name}</td>
+              <td>{user.User_Name}</td>
               <td>{user.Role}</td>
-              <td>{user.Status}</td>
               <td>
                 <Button variant="warning" onClick={() => handleShow("edit", user)} className="mx-2">Edit</Button>
-                <Button variant="danger" onClick={() => handleDelete(user.$id)}>Delete</Button>
+                <Button variant="danger" onClick={() => handleDelete(user.$id, user.Email)}>Delete</Button>
               </td>
             </tr>
           ))}
@@ -134,6 +145,15 @@ const Users = () => {
                 onChange={(e) => setCurrentUser({ ...currentUser, Name: e.target.value })}
               />
             </Form.Group>
+            <Form.Group controlId="formUserName">
+              <Form.Label>User Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter User Name"
+                value={currentUser.User_Name}
+                onChange={(e) => setCurrentUser({ ...currentUser, User_Name: e.target.value })}
+              />
+            </Form.Group>
             <Form.Group controlId="formRole">
               <Form.Label>Role</Form.Label>
               <Form.Control
@@ -142,19 +162,6 @@ const Users = () => {
                 value={currentUser.Role}
                 onChange={(e) => setCurrentUser({ ...currentUser, Role: e.target.value })}
               />
-            </Form.Group>
-            <Form.Group controlId="formStatus">
-              <Form.Label>Status</Form.Label>
-              <Form.Control
-                as="select"
-                value={currentUser.Status}
-                onChange={(e) => setCurrentUser({ ...currentUser, Status: e.target.value })}
-              >
-                <option value="">Select Status</option>
-                {["Active", "Inactive", "Pending"].map((Status) => (
-                  <option key={Status} value={Status}>{Status}</option>
-                ))}
-              </Form.Control>
             </Form.Group>
           </Form>
         </Modal.Body>

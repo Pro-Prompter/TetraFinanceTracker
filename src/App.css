@@ -16,10 +16,11 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 2s ease, color 2s ease;
+  background: #fff
 }
 
 /* Full-page gradient background */
@@ -37,23 +38,25 @@ body {
   padding: 2rem;
   border: none;
   border-radius: 0.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
-  background: transparent; /* Remove background color */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+  background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
   overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .auth-card:hover {
   transform: scale(1.02); /* Subtle scaling effect on hover */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); /* More pronounced shadow on hover */
 }
 
 /* Form styling */
 .auth-form {
-  background-color: var(--light-bg); /* Keep form background */
+  background-color: var(--light-bg);
   border: 1px solid var(--border-color);
   border-radius: 0.25rem;
   padding: 1.5rem;
   width: 100%;
+  transition: background-color 0.3s ease; /* Smooth background transition */
 }
 
 .auth-form h2 {
@@ -68,8 +71,9 @@ body {
   max-width: 400px;
   transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   border: none;
-  padding: 0.75rem; /* Added padding for better touch targets */
+  padding: 0.75rem;
   border-radius: 0.25rem;
+  font-weight: bold; /* Bold text for buttons */
 }
 
 /* Primary button with animation */
@@ -82,6 +86,7 @@ body {
 .btn-animate:hover {
   background-color: var(--secondary-color);
   transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3); /* Shadow on hover */
 }
 
 /* Shine effect for buttons */
@@ -115,7 +120,7 @@ body {
   z-index: -1; /* Ensure it stays behind the button */
 }
 
-/* Additional shine effect */
+/* New shine effect for hover */
 .btn-shine-blue {
   background-color: var(--primary-color); /* Base color */
   color: white; /* Text color */
@@ -125,27 +130,10 @@ body {
   box-shadow: 0 0 20px rgba(0, 86, 179, 0.8); /* Glow effect */
 }
 
-/* New shine effect for hover */
-.btn-shine-blue::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 300%;
-  height: 300%;
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 0.6s ease;
-  z-index: 1;
-}
-
-.btn-shine-blue:hover::after {
-  transform: translate(-50%, -50%) scale(1); /* Scale effect on hover */
-}
-
 /* Alert styles */
 .alert {
   margin-bottom: 1rem;
+  border-radius: 0.25rem; /* Rounded corners for alerts */
 }
 
 /* Loading spinner container */
@@ -182,34 +170,7 @@ nav .nav-link {
 }
 
 nav .nav-link:hover {
-  text-decoration: none;
-}
-
-/* Footer styles */
-.footer_base {
-  background-color: var(--dark-bg);
-  color: #f8f9fa;
-  padding: 20px 0;
-  width: 100%;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.footer_content_wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 15px;
-}
-
-.footer_content_main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.footer_center {
-  flex: 1;
-  text-align: center;
+  text-decoration: underline; /* Underline on hover */
 }
 
 .logo {
@@ -282,4 +243,11 @@ nav .nav-link:hover {
   .nav-item {
     margin: 5px 0; /* Adjust margin for vertical stacking */
   }
+}
+.amount {
+  font-size: 2rem;
+  font-weight: bold;
+}
+.currency {
+  font-size: 1.2rem;
 }

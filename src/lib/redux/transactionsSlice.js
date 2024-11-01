@@ -13,7 +13,7 @@ export const fetchTransactions = createAsyncThunk('transactions/fetchTransaction
         return rejectWithValue(error.message);
     }
 });
-  
+
 // Add Transaction
 export const addTransaction = createAsyncThunk('transactions/addTransaction', async (transaction, { rejectWithValue }) => {
     try {
@@ -23,7 +23,7 @@ export const addTransaction = createAsyncThunk('transactions/addTransaction', as
         return rejectWithValue(error.message);
     }
 });
-  
+
 // Update Transaction
 export const updateTransaction = createAsyncThunk('transactions/updateTransaction', async (transaction, { rejectWithValue }) => {
     try {
@@ -33,7 +33,7 @@ export const updateTransaction = createAsyncThunk('transactions/updateTransactio
         return rejectWithValue(error.message);
     }
 });
-  
+
 // Delete Transaction
 export const deleteTransaction = createAsyncThunk('transactions/deleteTransaction', async (id, { rejectWithValue }) => {
     try {
@@ -43,7 +43,7 @@ export const deleteTransaction = createAsyncThunk('transactions/deleteTransactio
         return rejectWithValue(error.message);
     }
 });
-  
+
 const transactionsSlice = createSlice({
     name: 'transactions',
     initialState: {

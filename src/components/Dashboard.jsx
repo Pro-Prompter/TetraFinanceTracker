@@ -16,8 +16,8 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import Footer from "./Footer";
 import "chartjs-plugin-autocolors"; 
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -36,13 +36,58 @@ const Dashboard = () => {
 
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [exchangeRate, setExchangeRate] = useState(1);
+  const [loadingRate, setLoadingRate] = useState(true);
+  const [rateError, setRateError] = useState(null);
 
   useEffect(() => {
     dispatch(fetchTransactions());
   }, [dispatch]);
 
+  const fetchExchangeRate = async () => {
+    const cachedRate = localStorage.getItem('exchangeRate');
+    const cacheTimestamp = localStorage.getItem('exchangeRateTimestamp');
+    const cacheDuration = 24 * 60 * 60 * 1000;
+
+    if (cachedRate && cacheTimestamp) {
+      const timeSinceCache = Date.now() - parseInt(cacheTimestamp);
+      if (timeSinceCache < cacheDuration) {
+        setExchangeRate(JSON.parse(cachedRate));
+        setLoadingRate(false);
+        return;
+      }
+    }
+
+    try {
+      setLoadingRate(true);
+      const response = await fetch(import.meta.env.VITE_API_URL);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      const pkrRate = data.conversion_rates.PKR;
+      localStorage.setItem('exchangeRate', JSON.stringify(pkrRate));
+      localStorage.setItem('exchangeRateTimestamp', Date.now().toString());
+      setExchangeRate(pkrRate);
+      setRateError(null);
+    } catch (error) {
+      console.error("Error fetching exchange rate:", error);
+      setRateError("Could not fetch current exchange rate. Using last known rate.");
+      const cachedRate = localStorage.getItem('exchangeRate');
+      if (cachedRate) {
+        setExchangeRate(JSON.parse(cachedRate));
+      }
+    } finally {
+      setLoadingRate(false);
+    }
+  };
+
   useEffect(() => {
-    if (status === "succeeded") {
+    fetchExchangeRate();
+  }, []);
+
+  useEffect(() => {
+    if (status === "succeeded" && exchangeRate) {
       const income = transactions
         .filter((t) => t.Type === "Income")
         .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
@@ -50,12 +95,11 @@ const Dashboard = () => {
         .filter((t) => t.Type === "Expense")
         .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
 
-      setTotalIncome(income);
-      setTotalExpenses(expenses);
+      setTotalIncome(income * exchangeRate);
+      setTotalExpenses(expenses * exchangeRate);
     }
-  }, [transactions, status]);
+  }, [transactions, status, exchangeRate]);
 
-  // Define line chart data
   const lineChartData = {
     labels: transactions.map((t) => t.Date).reverse(),
     datasets: [
@@ -63,10 +107,10 @@ const Dashboard = () => {
         label: "Income",
         data: transactions
           .filter((t) => t.Type === "Income")
-          .map((t) => parseFloat(t.Amount))
+          .map((t) => parseFloat(t.Amount) * exchangeRate)
           .reverse(),
         borderColor: "#00C853",
-        backgroundColor: "rgba(0, 200, 83, 0.2)", 
+        backgroundColor: "rgba(0, 200, 83, 0.2)",
         borderWidth: 1,
         fill: true,
       },
@@ -74,10 +118,10 @@ const Dashboard = () => {
         label: "Expenses",
         data: transactions
           .filter((t) => t.Type === "Expense")
-          .map((t) => parseFloat(t.Amount))
+          .map((t) => parseFloat(t.Amount) * exchangeRate)
           .reverse(),
         borderColor: "#D50032",
-        backgroundColor: "rgba(213, 0, 50, 0.2)", 
+        backgroundColor: "rgba(213, 0, 50, 0.2)",
         borderWidth: 1,
         fill: true,
       },
@@ -90,45 +134,30 @@ const Dashboard = () => {
       {
         label: "Total Amount",
         data: [totalIncome, totalExpenses],
-        backgroundColor: ["rgba(0, 200, 83, 0.2)", "rgba(213, 0, 50, 0.2)"], 
-        borderColor: ["#00C853", "#D50032"], 
+        backgroundColor: ["rgba(0, 200, 83, 0.2)", "rgba(213, 0, 50, 0.2)"],
+        borderColor: ["#00C853", "#D50032"],
         borderWidth: 1,
       },
     ],
   };
 
-  // Easter egg
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src =
-      "https://rawgit.com/WeiChiaChang/Easter-egg/master/easter-eggs-collection.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    const handleKeyUp = (event) => {
-      if (event.key === "h" || event.key === "i") {
-        if (event.key === "i") {
-          console.log("Hey!! You Found it!!");
-        }
-      }
-    };
-
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      document.body.removeChild(script);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
   return (
-    <div className="pt">
-      {status === "loading" ? (
+    <div className="pt bg-white">
+      {loadingRate ? (
+        <div className="text-center mt-5">
+          <Spinner animation="border" variant="primary" />
+        </div>
+      ) : status === "loading" ? (
         <div className="text-center mt-5">
           <Spinner animation="border" variant="primary" />
         </div>
       ) : (
         <>
+          {rateError && (
+            <div className="alert alert-warning" role="alert">
+              {rateError}
+            </div>
+          )}
           <Row className="mt-4">
             <Col md={3}>
               <motion.div
@@ -139,17 +168,15 @@ const Dashboard = () => {
                 <Card className="income-card">
                   <Card.Body>
                     <Card.Title>Total Income</Card.Title>
-                    <Card.Text>${totalIncome.toFixed(2)}</Card.Text>
+                    <Card.Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+                      PKR {totalIncome.toFixed(2)}
+                    </Card.Text>
                   </Card.Body>
                 </Card>
               </motion.div>
             </Col>
-            <Col
-              md={6}
-              className="d-flex justify-content-center align-items-center"
-            >
-              <div className="empty-space"></div>{" "}
-              {}
+            <Col md={6} className="d-flex justify-content-center align-items-center">
+              <div className="empty-space"></div>
             </Col>
             <Col md={3}>
               <motion.div
@@ -160,7 +187,9 @@ const Dashboard = () => {
                 <Card className="expenses-card">
                   <Card.Body>
                     <Card.Title>Total Expenses</Card.Title>
-                    <Card.Text>${totalExpenses.toFixed(2)}</Card.Text>
+                    <Card.Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+                      PKR {totalExpenses.toFixed(2)}
+                    </Card.Text>
                   </Card.Body>
                 </Card>
               </motion.div>

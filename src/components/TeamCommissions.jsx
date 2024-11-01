@@ -3,35 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, Form, Modal, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { fetchCommissions, addCommission, updateCommission, deleteCommission } from '../lib/redux/commissionsSlice';
-import Footer from "./Footer";
-
-// Currency conversion rates relative to PKR
-const conversionRates = {
-  USD: 281.23, // PKR per USD
-  EUR: 257.34, // PKR per EUR (example rate)
-  GBP: 348.57, // PKR per GBP (example rate)
-  PKR: 1, // PKR per PKR
-};
-
-// Calculate commission based on amount paid and currency
-const calculateCommission = (amountPaid, currency) => {
-  const rate = conversionRates[currency] || 1; // Default to PKR if currency not found
-  const amountInPKR = parseFloat(amountPaid) * rate; // Convert to PKR
-  return (amountInPKR * 0.15 / conversionRates.PKR).toFixed(2); // Calculate 15% commission in PKR and convert back to the selected currency
-};
-
-// Format currency with thousand separator
-const formatCurrency = (value, currency) => {
-  if (isNaN(value)) {
-    return `${currency} 0.00`;
-  }
-  return new Intl.NumberFormat('en-US', { 
-    style: 'currency', 
-    currency, 
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2 
-  }).format(value);
-};
 
 const TeamCommissions = () => {
   const dispatch = useDispatch();
@@ -45,10 +16,57 @@ const TeamCommissions = () => {
     Commission: "",
     Currency: "PKR",
   });
+  const [exchangeRates, setExchangeRates] = useState({ PKR: 1 });
+  const [loadingRates, setLoadingRates] = useState(true);
 
   useEffect(() => {
     dispatch(fetchCommissions());
+    fetchExchangeRates();
   }, [dispatch]);
+
+  const fetchExchangeRates = async () => {
+    const cachedRates = localStorage.getItem('exchangeRates');
+    const cacheTimestamp = localStorage.getItem('exchangeRatesTimestamp');
+    const cacheDuration = 24 * 3600000; // 24 hours in milliseconds
+
+    if (cachedRates && cacheTimestamp && (Date.now() - cacheTimestamp < cacheDuration)) {
+      setExchangeRates(JSON.parse(cachedRates));
+      setLoadingRates(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setExchangeRates(data.conversion_rates);
+      localStorage.setItem('exchangeRates', JSON.stringify(data.conversion_rates));
+      localStorage.setItem('exchangeRatesTimestamp', Date.now());
+    } catch (error) {
+      console.error("Error fetching exchange rates:", error);
+    } finally {
+      setLoadingRates(false);
+    }
+  };
+
+  const calculateCommission = (amountPaid, currency) => {
+    const rate = exchangeRates[currency] || 1; // Default to 1 if currency not found
+    const amountInPKR = parseFloat(amountPaid) * rate; // Convert to PKR
+    const commissionValue = (amountInPKR * 0.15) / exchangeRates.PKR; // Calculate 15% commission in PKR and convert back
+    return Math.round(commissionValue * 100) / 100; // Round to 2 decimal places
+  };
+
+  const formatCurrency = (value, currency) => {
+    if (isNaN(value)) {
+      return `${currency} 0.00`;
+    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
 
   const handleShow = (mode, commission = {}) => {
     setModalMode(mode);
@@ -76,10 +94,13 @@ const TeamCommissions = () => {
   };
 
   const handleSave = async () => {
+    const amountPaid = parseFloat(currentCommission.Amount_Paid) || 0;
+    const commissionValue = calculateCommission(amountPaid, currentCommission.Currency);
+
     const commissionData = {
       Project: currentCommission.Project,
-      Amount_Paid: parseFloat(currentCommission.Amount_Paid || 0).toFixed(2),
-      Commission: calculateCommission(currentCommission.Amount_Paid, currentCommission.Currency),
+      Amount_Paid: amountPaid.toFixed(2),
+      Commission: commissionValue.toFixed(2),
       Currency: currentCommission.Currency,
     };
 
@@ -150,7 +171,7 @@ const TeamCommissions = () => {
             const amountPaid = parseFloat(commission.Amount_Paid) || 0;
             const commissionValue = parseFloat(commission.Commission) || 0;
             const grandTotal = amountPaid - commissionValue;
-            
+
             return (
               <tr key={commission.$id}>
                 <td>{index + 1}</td>
@@ -204,7 +225,7 @@ const TeamCommissions = () => {
                   setCurrentCommission({
                     ...currentCommission,
                     Amount_Paid: amountPaid,
-                    Commission: calculateCommission(amountPaid, currentCommission.Currency),
+                    Commission: calculateCommission(amountPaid, currentCommission.Currency).toFixed(2),
                   });
                 }}
                 placeholder="Enter amount paid"
@@ -219,7 +240,7 @@ const TeamCommissions = () => {
                   setCurrentCommission({
                     ...currentCommission,
                     Currency: e.target.value,
-                    Commission: calculateCommission(currentCommission.Amount_Paid, e.target.value),
+                    Commission: calculateCommission(currentCommission.Amount_Paid, e.target.value).toFixed(2),
                   })
                 }
               >

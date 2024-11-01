@@ -3,52 +3,74 @@ import { Button, Form, Alert, Spinner, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login as loginThunk, signup as signupThunk } from "../lib/redux/authSlice";
+import { databases } from '../lib/appwrite'; // Import the databases API
 import "../App.css";
 
 const Auth = ({ mode }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [errors, setErrors] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { status, error, isAuthenticated } = useSelector((state) => state.auth);
 
+  // Function to generate a dynamic gradient
+  const generateDynamicGradient = () => {
+    const colors = Array.from({ length: 3 }, () => `hsl(${Math.random() * 360}, 100%, 50%)`);
+    return `linear-gradient(${Math.random() * 360}deg, ${colors.join(", ")})`;
+  };
+
+  // Set an interval to change the gradient every few seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      document.body.style.background = generateDynamicGradient();
+    }, 5000); // Change gradient every 5 seconds
+
+    return () => clearInterval(intervalId); // Clean up on unmount
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (mode === "login") {
-      await dispatch(loginThunk({ email, password }));
-    } else if (mode === "signup") {
-      await dispatch(signupThunk({ email, password, name: username }));
+    const newErrors = [];
+
+    try {
+      if (mode === "login") {
+        await dispatch(loginThunk({ email, password }));
+      } else if (mode === "signup") {
+        const signupResult = await dispatch(signupThunk({ email, password, name: username }));
+
+        if (signupResult.meta.requestStatus === 'fulfilled') {
+          const documentData = {
+            User_Name: username,
+            Name: username,
+            Role: "User"
+          };
+
+          await databases.createDocument(
+            '66ae058300333732f99a',
+            '66ae05a1002d7b4e35f7',
+            'unique()',
+            documentData
+          );
+        }
+      }
+    } catch (err) {
+      setErrors([err.message || "An error occurred. Please try again."]);
     }
   };
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/"); // Redirect after successful auth
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
-  // Function to generate a random color in hex format
-  const getRandomColor = () => {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  };
-
-  // Function to create a random gradient
-  const generateRandomGradient = () => {
-    const color1 = getRandomColor();
-    const color2 = getRandomColor();
-    const angle = Math.floor(Math.random() * 360);
-    return `linear-gradient(${angle}deg, ${color1}, ${color2})`;
-  };
-
   useEffect(() => {
-    document.querySelector('.auth-page').style.background = generateRandomGradient();
-  }, []);
+    if (error) {
+      setErrors([error]);
+    }
+  }, [error]);
 
   return (
     <div className="auth-page">
@@ -56,6 +78,13 @@ const Auth = ({ mode }) => {
         <Card.Body>
           <h2 className="text-center mb-4">{mode === "login" ? "Login" : "Signup"}</h2>
           <Form onSubmit={handleSubmit} className="auth-form">
+            {errors.length > 0 && (
+              <Alert variant="danger">
+                {errors.map((err, index) => (
+                  <div key={index}>{err}</div>
+                ))}
+              </Alert>
+            )}
             {mode === "signup" && (
               <Form.Group controlId="formBasicUsername">
                 <Form.Label>Username</Form.Label>
@@ -63,7 +92,10 @@ const Auth = ({ mode }) => {
                   type="text"
                   placeholder="Enter username"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setErrors([]);
+                  }}
                   required
                 />
               </Form.Group>
@@ -74,7 +106,10 @@ const Auth = ({ mode }) => {
                 type="email"
                 placeholder="Enter email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrors([]);
+                }}
                 required
               />
             </Form.Group>
@@ -84,7 +119,10 @@ const Auth = ({ mode }) => {
                 type="password"
                 placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrors([]);
+                }}
                 required
               />
             </Form.Group>
@@ -96,7 +134,6 @@ const Auth = ({ mode }) => {
             >
               {status === "loading" ? <Spinner animation="border" /> : (mode === "login" ? "Login" : "Signup")}
             </Button>
-            {error && <Alert variant="danger">{error}</Alert>}
           </Form>
           <div className="text-center mt-3">
             {mode === "login" ? (

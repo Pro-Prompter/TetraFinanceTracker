@@ -9,13 +9,14 @@ import {
   updateTransaction,
   deleteTransaction,
 } from "../lib/redux/transactionsSlice";
-import Footer from "./Footer";
+import { storage, ID } from '../lib/appwrite';
 
 const Transactions = () => {
   const dispatch = useDispatch();
   const { transactions, status, error } = useSelector(
     (state) => state.transactions
   );
+
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [currentTransaction, setCurrentTransaction] = useState({
@@ -25,27 +26,83 @@ const Transactions = () => {
     Comments: "",
     Currency: "USD",
     Status: "",
+    InvoiceId: null,
   });
+  const [invoiceFile, setInvoiceFile] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
+  const [exchangeRate, setExchangeRate] = useState({});
+  const [loadingRate, setLoadingRate] = useState(true);
+  const [invoiceFileName, setInvoiceFileName] = useState("");
 
   useEffect(() => {
     dispatch(fetchTransactions());
+    fetchExchangeRate();
   }, [dispatch]);
 
-  const handleShow = (mode, transaction = {}) => {
+  const fetchExchangeRate = async () => {
+    const cachedRates = localStorage.getItem('exchangeRates');
+    const cacheTimestamp = localStorage.getItem('exchangeRatesTimestamp');
+    const cacheDuration = 24 * 3600000; // 24 hours in milliseconds
+
+    if (cachedRates && cacheTimestamp && (Date.now() - cacheTimestamp < cacheDuration)) {
+      setExchangeRate(JSON.parse(cachedRates));
+      setLoadingRate(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      
+      // Get rates for USD, GBP, and EUR to PKR
+      const rates = {
+        USD: data.conversion_rates.USD,
+        GBP: data.conversion_rates.GBP,
+        EUR: data.conversion_rates.EUR,
+        PKR: data.conversion_rates.PKR,
+      };
+      
+      setExchangeRate(rates);
+      localStorage.setItem('exchangeRates', JSON.stringify(rates));
+      localStorage.setItem('exchangeRatesTimestamp', Date.now());
+    } catch (error) {
+      console.error("Error fetching exchange rates:", error);
+    } finally {
+      setLoadingRate(false);
+    }
+  };
+
+  const handleShow = async (mode, transaction = {}) => {
     setModalMode(mode);
-    setCurrentTransaction(
-      mode === "edit" && transaction
-        ? { ...transaction }
-        : {
-            Date: "",
-            Amount: "",
-            Type: "",
-            Comments: "",
-            Currency: "USD",
-            Status: "",
-          }
-    );
+    if (mode === "edit" && transaction) {
+      setCurrentTransaction({
+        ...transaction,
+        Date: format(parseISO(transaction.Date), "yyyy-MM-dd"),
+      });
+      setInvoiceFile(null);
+      setInvoiceFileName("");
+
+      if (transaction.InvoiceId) {
+        try {
+          const file = await storage.getFile('672078b60026aca47d2b', transaction.InvoiceId);
+          setInvoiceFileName(file.name);
+        } catch (error) {
+          console.error("Error fetching file:", error);
+        }
+      }
+    } else {
+      setCurrentTransaction({
+        Date: "",
+        Amount: "",
+        Type: "",
+        Comments: "",
+        Currency: "USD",
+        Status: "",
+        InvoiceId: null,
+      });
+      setInvoiceFileName("");
+    }
     setShowModal(true);
   };
 
@@ -58,32 +115,48 @@ const Transactions = () => {
       Comments: "",
       Currency: "USD",
       Status: "",
+      InvoiceId: null,
     });
   };
 
+  const uploadInvoice = async () => {
+    if (!invoiceFile) {
+      return null;
+    }
+
+    try {
+      const response = await storage.createFile('672078b60026aca47d2b', ID.unique(), invoiceFile);
+      return response.$id;
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: "There was a problem uploading the invoice.",
+        icon: "error",
+      });
+      return null;
+    }
+  };
+
   const handleSave = async () => {
+    const invoiceId = await uploadInvoice();
     const transactionData = {
       Date: format(new Date(currentTransaction.Date), "yyyy-MM-dd"),
-      Amount: parseFloat(
-        currentTransaction.Amount.replace(/[^0-9.-]+/g, "")
-      ).toFixed(2),
+      Amount: parseFloat(currentTransaction.Amount.replace(/[^0-9.-]+/g, "") || 0).toFixed(2),
       Type: currentTransaction.Type,
       Comments: currentTransaction.Comments,
       Currency: currentTransaction.Currency,
       Status: currentTransaction.Status,
+      InvoiceId: invoiceId || null,
     };
 
     try {
       if (modalMode === "add") {
         await dispatch(addTransaction(transactionData));
       } else if (modalMode === "edit") {
-        await dispatch(
-          updateTransaction({ ...transactionData, $id: currentTransaction.$id })
-        );
+        await dispatch(updateTransaction({ ...transactionData, $id: currentTransaction.$id }));
       }
       handleClose();
     } catch (error) {
-      console.error("Error saving transaction:", error);
       Swal.fire({
         title: "Error!",
         text: "There was a problem saving the transaction.",
@@ -92,7 +165,7 @@ const Transactions = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, invoiceId) => {
     try {
       const result = await Swal.fire({
         title: "Are you sure?",
@@ -105,6 +178,9 @@ const Transactions = () => {
       });
 
       if (result.isConfirmed) {
+        if (invoiceId) {
+          await storage.deleteFile('672078b60026aca47d2b', invoiceId);
+        }
         await dispatch(deleteTransaction(id));
         await Swal.fire({
           title: "Deleted!",
@@ -113,7 +189,11 @@ const Transactions = () => {
         });
       }
     } catch (error) {
-      console.error("Error deleting transaction:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "There was a problem deleting the transaction.",
+        icon: "error",
+      });
     }
   };
 
@@ -125,11 +205,7 @@ const Transactions = () => {
     <div>
       <h1>Transactions</h1>
       <div className="d-flex align-items-center mb-3">
-        <Button
-          variant="primary"
-          onClick={() => handleShow("add")}
-          className="my-4"
-        >
+        <Button variant="primary" onClick={() => handleShow("add")} className="my-4">
           Add Transaction
         </Button>
         <Form.Group controlId="formFilterStatus" className="mb-0 mx-4">
@@ -151,64 +227,96 @@ const Transactions = () => {
           <tr>
             <th>#</th>
             <th>Date</th>
-            <th>Amount</th>
+            <th>Amount (PKR)</th>
             <th>Type</th>
             <th>Comments</th>
             <th>Status</th>
+            <th>Invoice</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {status === "loading" ? (
+          {loadingRate ? (
             <tr>
-              <td colSpan="7" className="text-center">
+              <td colSpan="8" className="text-center">
                 <Spinner animation="border" />
               </td>
             </tr>
           ) : status === "failed" ? (
             <tr>
-              <td colSpan="7" className="text-center">
+              <td colSpan="8" className="text-center">
                 Error: {error}
               </td>
             </tr>
           ) : (
-            filteredTransactions.map((transaction, index) => (
-              <tr key={transaction.$id}>
-                <td>{index + 1}</td>
-                <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
-                <td>
-                  {transaction.Currency}{" "}
-                  {parseFloat(transaction.Amount).toFixed(2)}
-                </td>
-                <td>{transaction.Type}</td>
-                <td>{transaction.Comments}</td>
-                <td>{transaction.Status}</td>
-                <td>
-                  <Button
-                    variant="warning"
-                    onClick={() => handleShow("edit", transaction)}
-                    className="mr-2"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => handleDelete(transaction.$id)}
-                    className="mx-3"
-                  >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))
+            filteredTransactions.map((transaction, index) => {
+              // Convert the amount to PKR based on the currency
+              let amountInPKR = parseFloat(transaction.Amount).toFixed(2);
+              switch (transaction.Currency) {
+                case 'USD':
+                  amountInPKR *= exchangeRate.USD; // Convert USD to PKR
+                  break;
+                case 'GBP':
+                  amountInPKR *= exchangeRate.GBP; // Convert GBP to PKR
+                  break;
+                case 'EUR':
+                  amountInPKR *= exchangeRate.EUR; // Convert EUR to PKR
+                  break;
+                default:
+                  // Amount is already in PKR, no conversion needed
+                  break;
+              }
+
+              return (
+                <tr key={transaction.$id}>
+                  <td>{index + 1}</td>
+                  <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
+                  <td>
+                    PKR {amountInPKR.toFixed(2)} {/* Display amount in PKR */}
+                  </td>
+                  <td>{transaction.Type}</td>
+                  <td>{transaction.Comments}</td>
+                  <td>{transaction.Status}</td>
+                  <td>
+                    {transaction.InvoiceId ? (
+                      <a
+                        href={transaction.InvoiceId ? storage.getFilePreview('672078b60026aca47d2b', transaction.InvoiceId) : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View Invoice
+                      </a>
+                    ) : (
+                      "No Invoice"
+                    )}
+                  </td>
+                  <td>
+                    <Button
+                      variant="warning"
+                      onClick={() => handleShow("edit", transaction)}
+                      className="mr-2"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDelete(transaction.$id, transaction.InvoiceId)}
+                      className="mx-3"
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </Table>
+
+      {/* Modal for Add/Edit Transaction */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>
-            {modalMode === "add" ? "Add Transaction" : "Edit Transaction"}
-          </Modal.Title>
+          <Modal.Title>{modalMode === "add" ? "Add Transaction" : "Edit Transaction"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -217,27 +325,17 @@ const Transactions = () => {
               <Form.Control
                 type="date"
                 value={currentTransaction.Date}
-                onChange={(e) =>
-                  setCurrentTransaction({
-                    ...currentTransaction,
-                    Date: e.target.value,
-                  })
-                }
+                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Date: e.target.value })}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formAmount">
               <Form.Label>Amount</Form.Label>
               <Form.Control
-                type="number"
-                step="0.01"
-                placeholder="Enter Amount"
+                type="text"
                 value={currentTransaction.Amount}
-                onChange={(e) =>
-                  setCurrentTransaction({
-                    ...currentTransaction,
-                    Amount: e.target.value,
-                  })
-                }
+                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Amount: e.target.value })}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formType">
@@ -245,33 +343,32 @@ const Transactions = () => {
               <Form.Control
                 as="select"
                 value={currentTransaction.Type}
-                onChange={(e) =>
-                  setCurrentTransaction({
-                    ...currentTransaction,
-                    Type: e.target.value,
-                  })
-                }
+                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Type: e.target.value })}
+                required
               >
                 <option value="">Select Type</option>
                 <option value="Income">Income</option>
                 <option value="Expense">Expense</option>
               </Form.Control>
             </Form.Group>
+            <Form.Group controlId="formComments">
+              <Form.Label>Comments</Form.Label>
+              <Form.Control
+                type="text"
+                value={currentTransaction.Comments}
+                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Comments: e.target.value })}
+              />
+            </Form.Group>
             <Form.Group controlId="formCurrency">
               <Form.Label>Currency</Form.Label>
               <Form.Control
                 as="select"
                 value={currentTransaction.Currency}
-                onChange={(e) =>
-                  setCurrentTransaction({
-                    ...currentTransaction,
-                    Currency: e.target.value,
-                  })
-                }
+                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Currency: e.target.value })}
               >
                 <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
                 <option value="GBP">GBP</option>
+                <option value="EUR">EUR</option>
                 <option value="PKR">PKR</option>
               </Form.Control>
             </Form.Group>
@@ -280,33 +377,24 @@ const Transactions = () => {
               <Form.Control
                 as="select"
                 value={currentTransaction.Status}
-                onChange={(e) =>
-                  setCurrentTransaction({
-                    ...currentTransaction,
-                    Status: e.target.value,
-                  })
-                }
+                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Status: e.target.value })}
+                required
               >
-                <option value="">Select Status</option>
                 <option value="Pending">Pending</option>
                 <option value="Paid">Paid</option>
                 <option value="Unpaid">Unpaid</option>
               </Form.Control>
             </Form.Group>
-            <Form.Group controlId="formComments">
-              <Form.Label>Comments</Form.Label>
+            <Form.Group controlId="formInvoice">
+              <Form.Label>Invoice</Form.Label>
               <Form.Control
-                as="textarea"
-                rows={3}
-                placeholder="Enter Comments"
-                value={currentTransaction.Comments}
-                onChange={(e) =>
-                  setCurrentTransaction({
-                    ...currentTransaction,
-                    Comments: e.target.value,
-                  })
-                }
+                type="file"
+                onChange={(e) => {
+                  setInvoiceFile(e.target.files[0]);
+                  setInvoiceFileName(e.target.files[0].name);
+                }}
               />
+              {invoiceFileName && <p>Selected File: {invoiceFileName}</p>}
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -315,7 +403,7 @@ const Transactions = () => {
             Close
           </Button>
           <Button variant="primary" onClick={handleSave}>
-            Save Changes
+            {modalMode === "add" ? "Add Transaction" : "Update Transaction"}
           </Button>
         </Modal.Footer>
       </Modal>

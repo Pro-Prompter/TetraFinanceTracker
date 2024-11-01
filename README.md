@@ -68,7 +68,6 @@ src/
 ├── components/
 │   ├── Clients.jsx
 │   ├── Dashboard.jsx
-│   ├── Footer.jsx
 │   ├── Navbar.jsx
 │   ├── Settings.jsx
 │   ├── TeamCommissions.jsx
