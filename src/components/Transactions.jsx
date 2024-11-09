@@ -30,48 +30,11 @@ const Transactions = () => {
   });
   const [invoiceFile, setInvoiceFile] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
-  const [exchangeRate, setExchangeRate] = useState({});
-  const [loadingRate, setLoadingRate] = useState(true);
   const [invoiceFileName, setInvoiceFileName] = useState("");
 
   useEffect(() => {
     dispatch(fetchTransactions());
-    fetchExchangeRate();
   }, [dispatch]);
-
-  const fetchExchangeRate = async () => {
-    const cachedRates = localStorage.getItem('exchangeRates');
-    const cacheTimestamp = localStorage.getItem('exchangeRatesTimestamp');
-    const cacheDuration = 24 * 3600000; // 24 hours in milliseconds
-
-    if (cachedRates && cacheTimestamp && (Date.now() - cacheTimestamp < cacheDuration)) {
-      setExchangeRate(JSON.parse(cachedRates));
-      setLoadingRate(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(import.meta.env.VITE_API_URL);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      
-      // Get rates for USD, GBP, and EUR to PKR
-      const rates = {
-        USD: data.conversion_rates.USD,
-        GBP: data.conversion_rates.GBP,
-        EUR: data.conversion_rates.EUR,
-        PKR: data.conversion_rates.PKR,
-      };
-      
-      setExchangeRate(rates);
-      localStorage.setItem('exchangeRates', JSON.stringify(rates));
-      localStorage.setItem('exchangeRatesTimestamp', Date.now());
-    } catch (error) {
-      console.error("Error fetching exchange rates:", error);
-    } finally {
-      setLoadingRate(false);
-    }
-  };
 
   const handleShow = async (mode, transaction = {}) => {
     setModalMode(mode);
@@ -236,7 +199,7 @@ const Transactions = () => {
           </tr>
         </thead>
         <tbody>
-          {loadingRate ? (
+          {status === "loading" ? (
             <tr>
               <td colSpan="8" className="text-center">
                 <Spinner animation="border" />
@@ -249,66 +212,47 @@ const Transactions = () => {
               </td>
             </tr>
           ) : (
-            filteredTransactions.map((transaction, index) => {
-              // Convert the amount to PKR based on the currency
-              let amountInPKR = parseFloat(transaction.Amount).toFixed(2);
-              switch (transaction.Currency) {
-                case 'USD':
-                  amountInPKR *= exchangeRate.USD; // Convert USD to PKR
-                  break;
-                case 'GBP':
-                  amountInPKR *= exchangeRate.GBP; // Convert GBP to PKR
-                  break;
-                case 'EUR':
-                  amountInPKR *= exchangeRate.EUR; // Convert EUR to PKR
-                  break;
-                default:
-                  // Amount is already in PKR, no conversion needed
-                  break;
-              }
-
-              return (
-                <tr key={transaction.$id}>
-                  <td>{index + 1}</td>
-                  <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
-                  <td>
-                    PKR {amountInPKR.toFixed(2)} {/* Display amount in PKR */}
-                  </td>
-                  <td>{transaction.Type}</td>
-                  <td>{transaction.Comments}</td>
-                  <td>{transaction.Status}</td>
-                  <td>
-                    {transaction.InvoiceId ? (
-                      <a
-                        href={transaction.InvoiceId ? storage.getFilePreview('672078b60026aca47d2b', transaction.InvoiceId) : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View Invoice
-                      </a>
-                    ) : (
-                      "No Invoice"
-                    )}
-                  </td>
-                  <td>
-                    <Button
-                      variant="warning"
-                      onClick={() => handleShow("edit", transaction)}
-                      className="mr-2"
+            filteredTransactions.map((transaction, index) => (
+              <tr key={transaction.$id}>
+                <td>{index + 1}</td>
+                <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
+                <td>
+                  PKR {parseFloat(transaction.Amount).toFixed(2)} {/* Display amount directly in PKR */}
+                </td>
+                <td>{transaction.Type}</td>
+                <td>{transaction.Comments}</td>
+                <td>{transaction.Status}</td>
+                <td>
+                  {transaction.InvoiceId ? (
+                    <a
+                      href={transaction.InvoiceId ? storage.getFilePreview('672078b60026aca47d2b', transaction.InvoiceId) : '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() => handleDelete(transaction.$id, transaction.InvoiceId)}
-                      className="mx-3"
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })
+                      View Invoice
+                    </a>
+                  ) : (
+                    "No Invoice"
+                  )}
+                </td>
+                <td>
+                  <Button
+                    variant="warning"
+                    onClick={() => handleShow("edit", transaction)}
+                    className="mr-2"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDelete(transaction.$id, transaction.InvoiceId)}
+                    className="mx-3"
+                  >
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))
           )}
         </tbody>
       </Table>

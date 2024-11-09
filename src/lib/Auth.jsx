@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import { Button, Form, Alert, Spinner, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login as loginThunk, signup as signupThunk } from "../lib/redux/authSlice";
-import { databases } from '../lib/appwrite'; // Import the databases API
+import { databases } from '../lib/appwrite';
 import "../App.css";
 
 const Auth = ({ mode }) => {
@@ -15,24 +15,9 @@ const Auth = ({ mode }) => {
   const navigate = useNavigate();
   const { status, error, isAuthenticated } = useSelector((state) => state.auth);
 
-  // Function to generate a dynamic gradient
-  const generateDynamicGradient = () => {
-    const colors = Array.from({ length: 3 }, () => `hsl(${Math.random() * 360}, 100%, 50%)`);
-    return `linear-gradient(${Math.random() * 360}deg, ${colors.join(", ")})`;
-  };
-
-  // Set an interval to change the gradient every few seconds
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      document.body.style.background = generateDynamicGradient();
-    }, 5000); // Change gradient every 5 seconds
-
-    return () => clearInterval(intervalId); // Clean up on unmount
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors = [];
+    setErrors([]); // Reset errors before each submit
 
     try {
       if (mode === "login") {
@@ -40,17 +25,17 @@ const Auth = ({ mode }) => {
       } else if (mode === "signup") {
         const signupResult = await dispatch(signupThunk({ email, password, name: username }));
 
-        if (signupResult.meta.requestStatus === 'fulfilled') {
+        if (signupResult.meta.requestStatus === "fulfilled") {
           const documentData = {
             User_Name: username,
             Name: username,
-            Role: "User"
+            Role: "User",
           };
 
           await databases.createDocument(
-            '66ae058300333732f99a',
-            '66ae05a1002d7b4e35f7',
-            'unique()',
+            "66ae058300333732f99a",
+            "66ae05a1002d7b4e35f7",
+            "unique()",
             documentData
           );
         }
@@ -62,7 +47,7 @@ const Auth = ({ mode }) => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate("/"); // Redirect to home if authenticated
     }
   }, [isAuthenticated, navigate]);
 
@@ -85,6 +70,7 @@ const Auth = ({ mode }) => {
                 ))}
               </Alert>
             )}
+
             {mode === "signup" && (
               <Form.Group controlId="formBasicUsername">
                 <Form.Label>Username</Form.Label>
@@ -92,49 +78,44 @@ const Auth = ({ mode }) => {
                   type="text"
                   placeholder="Enter username"
                   value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    setErrors([]);
-                  }}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </Form.Group>
             )}
+
             <Form.Group controlId="formBasicEmail">
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Enter email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErrors([]);
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </Form.Group>
+
             <Form.Group controlId="formBasicPassword">
               <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
                 placeholder="Password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErrors([]);
-                }}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </Form.Group>
+
             <Button
               variant="primary"
               type="submit"
               disabled={status === "loading"}
               className="btn-shine-blue w-100 my-4"
             >
-              {status === "loading" ? <Spinner animation="border" /> : (mode === "login" ? "Login" : "Signup")}
+              {status === "loading" ? <Spinner animation="border" /> : mode === "login" ? "Login" : "Signup"}
             </Button>
           </Form>
+
           <div className="text-center mt-3">
             {mode === "login" ? (
               <p>

@@ -23,12 +23,12 @@ export const fetchConversionRates = createAsyncThunk(
   'commissions/fetchConversionRates',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json');
+      const response = await axios.get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/pkr.json');
       return response.data;
     } catch (error) {
       // Fallback URL
       try {
-        const response = await axios.get('https://latest.currency-api.pages.dev/v1/currencies/eur.json');
+        const response = await axios.get('https://latest.currency-api.pages.dev/v1/currencies/pkr.json');
         return response.data;
       } catch (fallbackError) {
         return rejectWithValue('Failed to fetch conversion rates');

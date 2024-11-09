@@ -16,43 +16,14 @@ const TeamCommissions = () => {
     Commission: "",
     Currency: "PKR",
   });
-  const [exchangeRates, setExchangeRates] = useState({ PKR: 1 });
-  const [loadingRates, setLoadingRates] = useState(true);
 
   useEffect(() => {
     dispatch(fetchCommissions());
-    fetchExchangeRates();
   }, [dispatch]);
 
-  const fetchExchangeRates = async () => {
-    const cachedRates = localStorage.getItem('exchangeRates');
-    const cacheTimestamp = localStorage.getItem('exchangeRatesTimestamp');
-    const cacheDuration = 24 * 3600000; // 24 hours in milliseconds
-
-    if (cachedRates && cacheTimestamp && (Date.now() - cacheTimestamp < cacheDuration)) {
-      setExchangeRates(JSON.parse(cachedRates));
-      setLoadingRates(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(import.meta.env.VITE_API_URL);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      setExchangeRates(data.conversion_rates);
-      localStorage.setItem('exchangeRates', JSON.stringify(data.conversion_rates));
-      localStorage.setItem('exchangeRatesTimestamp', Date.now());
-    } catch (error) {
-      console.error("Error fetching exchange rates:", error);
-    } finally {
-      setLoadingRates(false);
-    }
-  };
-
-  const calculateCommission = (amountPaid, currency) => {
-    const rate = exchangeRates[currency] || 1; // Default to 1 if currency not found
-    const amountInPKR = parseFloat(amountPaid) * rate; // Convert to PKR
-    const commissionValue = (amountInPKR * 0.15) / exchangeRates.PKR; // Calculate 15% commission in PKR and convert back
+  const calculateCommission = (amountPaid) => {
+    const amountInPKR = parseFloat(amountPaid) || 0; // Assume input is in PKR
+    const commissionValue = (amountInPKR * 0.15); // Calculate 15% commission
     return Math.round(commissionValue * 100) / 100; // Round to 2 decimal places
   };
 
@@ -95,7 +66,7 @@ const TeamCommissions = () => {
 
   const handleSave = async () => {
     const amountPaid = parseFloat(currentCommission.Amount_Paid) || 0;
-    const commissionValue = calculateCommission(amountPaid, currentCommission.Currency);
+    const commissionValue = calculateCommission(amountPaid);
 
     const commissionData = {
       Project: currentCommission.Project,
@@ -225,7 +196,7 @@ const TeamCommissions = () => {
                   setCurrentCommission({
                     ...currentCommission,
                     Amount_Paid: amountPaid,
-                    Commission: calculateCommission(amountPaid, currentCommission.Currency).toFixed(2),
+                    Commission: calculateCommission(amountPaid).toFixed(2),
                   });
                 }}
                 placeholder="Enter amount paid"
@@ -240,7 +211,7 @@ const TeamCommissions = () => {
                   setCurrentCommission({
                     ...currentCommission,
                     Currency: e.target.value,
-                    Commission: calculateCommission(currentCommission.Amount_Paid, e.target.value).toFixed(2),
+                    Commission: calculateCommission(currentCommission.Amount_Paid).toFixed(2),
                   })
                 }
               >
