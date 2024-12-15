@@ -4,11 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { checkAuth } from "./lib/redux/authSlice";
 import NavigationBar from "./components/Navbar";
 import Dashboard from "./components/Dashboard";
-import Clients from "./components/Clients";
 import Transactions from "./components/Transactions";
 import TeamCommissions from "./components/TeamCommissions";
-import Users from "./components/Users";
-import Settings from "./components/Settings";
 import Auth from "./lib/Auth";
 import ClipLoader from "react-spinners/ClipLoader";
 
@@ -60,15 +57,12 @@ const App = () => {
                 <div className="container pt">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
-                    <Route path="/clients" element={<Clients />} />
+
                     <Route path="/transactions" element={<Transactions />} />
                     <Route
                       path="/team-commissions"
                       element={<TeamCommissions />}
                     />
-
-                    <Route path="/users" element={<Users />} />
-                    <Route path="/settings" element={<Settings />} />
 
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>

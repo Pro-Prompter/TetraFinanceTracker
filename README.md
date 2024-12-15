@@ -64,19 +64,15 @@ This project is a finance management system designed for Tetra Studio to handle 
 
 ``` bash
 src/
-├── assets/
 ├── components/
-│   ├── Clients.jsx
 │   ├── Dashboard.jsx
 │   ├── Navbar.jsx
-│   ├── Settings.jsx
 │   ├── TeamCommissions.jsx
 │   ├── Transactions.jsx
-│   ├── Users.jsx
 ├── lib/
 │   ├── appwrite.js
+│   ├── Auth.jsx
 ├── redux/
-│   ├── clientSlice.js
 │   ├── store.js
 │   ├── transactionSlice.js
 ├── App.css

@@ -3,20 +3,22 @@ import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, Form, Modal, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { format, parseISO } from "date-fns";
+import { BsPencilSquare, BsTrash, BsPlusSquare } from "react-icons/bs";
+import { AiFillCloseCircle, AiFillSave } from "react-icons/ai";
 import {
   fetchTransactions,
   addTransaction,
   updateTransaction,
   deleteTransaction,
 } from "../lib/redux/transactionsSlice";
-import { storage, ID } from '../lib/appwrite';
+import { storage, ID } from "../lib/appwrite";
 
 const Transactions = () => {
   const dispatch = useDispatch();
   const { transactions, status, error } = useSelector(
     (state) => state.transactions
   );
-
+  const [filterStatus, setFilterStatus] = useState("All");
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [currentTransaction, setCurrentTransaction] = useState({
@@ -27,50 +29,89 @@ const Transactions = () => {
     Currency: "USD",
     Status: "",
     InvoiceId: null,
+    ClientName: "",
+    CompanyName: "",
+    ProjectName: "",
+    ProjectStartDate: "",
+    ProjectEndDate: "",
+    RevisionsAmount: 0,
+    Discount: 0,
   });
   const [invoiceFile, setInvoiceFile] = useState(null);
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [invoiceFileName, setInvoiceFileName] = useState("");
+  const [receiptFileName, setReceiptFileName] = useState("");
 
   useEffect(() => {
     dispatch(fetchTransactions());
   }, [dispatch]);
 
   const handleShow = async (mode, transaction = {}) => {
-    setModalMode(mode);
     if (mode === "edit" && transaction) {
-      setCurrentTransaction({
+      const result = await Swal.fire({
+        title: "Do you want to edit this transaction?",
+        text: "Make sure the details are correct before proceeding.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, edit it",
+        cancelButtonText: "Cancel",
+      });
+
+      if (!result.isConfirmed) return;
+
+      setModalMode("edit");
+      const formattedTransaction = {
         ...transaction,
         Date: format(parseISO(transaction.Date), "yyyy-MM-dd"),
-      });
-      setInvoiceFile(null);
-      setInvoiceFileName("");
+        ProjectStartDate: transaction.ProjectStartDate
+          ? format(parseISO(transaction.ProjectStartDate), "yyyy-MM-dd")
+          : "",
+        ProjectEndDate: transaction.ProjectEndDate
+          ? format(parseISO(transaction.ProjectEndDate), "yyyy-MM-dd")
+          : "",
+      };
+      setCurrentTransaction(formattedTransaction);
+      setInvoiceFile(transactions.setInvoiceFile);
+      setInvoiceFileName(transactions.setInvoiceFileName);
+      setReceiptFile(transactions.setReceiptFile);
+      setReceiptFileName(transactions.setReceiptFileName);
 
       if (transaction.InvoiceId) {
         try {
-          const file = await storage.getFile('672078b60026aca47d2b', transaction.InvoiceId);
+          const file = await storage.getFile(
+            "672078b60026aca47d2b",
+            transaction.InvoiceId
+          );
           setInvoiceFileName(file.name);
         } catch (error) {
           console.error("Error fetching file:", error);
         }
       }
+
+      if (transaction.ReceiptId) {
+        try {
+          const file = await storage.getFile(
+            "675d9f9000011543ff7b",
+            transaction.ReceiptId
+          );
+          setReceiptFileName(file.name);
+        } catch (error) {
+          console.error("Error fetching file:", error);
+        }
+      }
     } else {
-      setCurrentTransaction({
-        Date: "",
-        Amount: "",
-        Type: "",
-        Comments: "",
-        Currency: "USD",
-        Status: "",
-        InvoiceId: null,
-      });
-      setInvoiceFileName("");
+      resetTransaction();
     }
     setShowModal(true);
   };
 
   const handleClose = () => {
     setShowModal(false);
+    resetTransaction();
+  };
+
+  const resetTransaction = () => {
     setCurrentTransaction({
       Date: "",
       Amount: "",
@@ -79,16 +120,27 @@ const Transactions = () => {
       Currency: "USD",
       Status: "",
       InvoiceId: null,
+      ClientName: "",
+      CompanyName: "",
+      ProjectName: "",
+      ProjectStartDate: "",
+      ProjectEndDate: "",
+      RevisionsAmount: 0,
+      Discount: 0,
     });
+    setInvoiceFileName("");
+    setReceiptFileName("");
   };
 
   const uploadInvoice = async () => {
-    if (!invoiceFile) {
-      return null;
-    }
+    if (!invoiceFile) return null;
 
     try {
-      const response = await storage.createFile('672078b60026aca47d2b', ID.unique(), invoiceFile);
+      const response = await storage.createFile(
+        "672078b60026aca47d2b",
+        ID.unique(),
+        invoiceFile
+      );
       return response.$id;
     } catch (error) {
       Swal.fire({
@@ -100,35 +152,105 @@ const Transactions = () => {
     }
   };
 
-  const handleSave = async () => {
-    const invoiceId = await uploadInvoice();
-    const transactionData = {
-      Date: format(new Date(currentTransaction.Date), "yyyy-MM-dd"),
-      Amount: parseFloat(currentTransaction.Amount.replace(/[^0-9.-]+/g, "") || 0).toFixed(2),
-      Type: currentTransaction.Type,
-      Comments: currentTransaction.Comments,
-      Currency: currentTransaction.Currency,
-      Status: currentTransaction.Status,
-      InvoiceId: invoiceId || null,
-    };
+  const uploadReceipt = async () => {
+    if (!receiptFile) return null;
 
     try {
+      const response = await storage.createFile(
+        "675d9f9000011543ff7b",
+        ID.unique(),
+        receiptFile
+      );
+      return response.$id;
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: "There was a problem uploading the receipt.",
+        icon: "error",
+      });
+      return null;
+    }
+  };
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    if (
+      !currentTransaction.Date ||
+      !currentTransaction.Amount ||
+      !currentTransaction.Type ||
+      !currentTransaction.ClientName ||
+      !currentTransaction.Status
+    ) {
+      Swal.fire({
+        title: "Error!",
+        text: "Please fill in all required fields.",
+        icon: "error",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    const isoDate = format(parseISO(currentTransaction.Date), "yyyy-MM-dd");
+    const isoProjectStartDate = currentTransaction.ProjectStartDate
+      ? format(parseISO(currentTransaction.ProjectStartDate), "yyyy-MM-dd")
+      : null;
+    const isoProjectEndDate = currentTransaction.ProjectEndDate
+      ? format(parseISO(currentTransaction.ProjectEndDate), "yyyy-MM-dd")
+      : null;
+
+    try {
+      const [invoiceId, receiptId] = await Promise.all([
+        uploadInvoice(),
+        uploadReceipt(),
+      ]);
+
+      const transactionData = {
+        Date: isoDate,
+        Amount: currentTransaction.Amount.toString(),
+        Type: currentTransaction.Type,
+        Comments: currentTransaction.Comments,
+        Currency: currentTransaction.Currency,
+        Status: currentTransaction.Status,
+        InvoiceId: invoiceId || null,
+        ReceiptId: receiptId || null,
+        ClientName: currentTransaction.ClientName,
+        CompanyName: currentTransaction.CompanyName,
+        ProjectName: currentTransaction.ProjectName,
+        ProjectStartDate: isoProjectStartDate,
+        ProjectEndDate: isoProjectEndDate,
+        RevisionsAmount: currentTransaction.RevisionsAmount.toString(),
+        Discount: currentTransaction.Discount.toString(),
+      };
+
       if (modalMode === "add") {
         await dispatch(addTransaction(transactionData));
+        Swal.fire({
+          title: "Success!",
+          text: "Transaction added successfully.",
+          icon: "success",
+        });
       } else if (modalMode === "edit") {
-        await dispatch(updateTransaction({ ...transactionData, $id: currentTransaction.$id }));
+        await dispatch(
+          updateTransaction({ ...transactionData, $id: currentTransaction.$id })
+        );
+        Swal.fire({
+          title: "Success!",
+          text: "Transaction updated successfully.",
+          icon: "success",
+        });
       }
       handleClose();
     } catch (error) {
       Swal.fire({
         title: "Error!",
-        text: "There was a problem saving the transaction.",
+        text: `There was a problem saving the transaction: ${error.message}`,
         icon: "error",
       });
     }
+    setIsLoading(false);
   };
 
-  const handleDelete = async (id, invoiceId) => {
+  const handleDelete = async (id, invoiceId, receiptId) => {
     try {
       const result = await Swal.fire({
         title: "Are you sure?",
@@ -142,7 +264,11 @@ const Transactions = () => {
 
       if (result.isConfirmed) {
         if (invoiceId) {
-          await storage.deleteFile('672078b60026aca47d2b', invoiceId);
+          await storage.deleteFile("672078b60026aca47d2b", invoiceId);
+        }
+
+        if (receiptId) {
+          await storage.deleteFile("675d9f9000011543ff7b", receiptId);
         }
         await dispatch(deleteTransaction(id));
         await Swal.fire({
@@ -168,8 +294,12 @@ const Transactions = () => {
     <div>
       <h1>Transactions</h1>
       <div className="d-flex align-items-center mb-3">
-        <Button variant="primary" onClick={() => handleShow("add")} className="my-4">
-          Add Transaction
+        <Button
+          variant="primary"
+          onClick={() => handleShow("add")}
+          className="my-4"
+        >
+          <BsPlusSquare /> Add Transaction
         </Button>
         <Form.Group controlId="formFilterStatus" className="mb-0 mx-4">
           <Form.Control
@@ -185,29 +315,35 @@ const Transactions = () => {
           </Form.Control>
         </Form.Group>
       </div>
-      <Table striped bordered hover className="mt-3">
-        <thead>
+
+      <Table striped bordered hover responsive className="mt-3">
+        <thead className="table-dark">
           <tr>
             <th>#</th>
             <th>Date</th>
-            <th>Amount (PKR)</th>
+            <th className="text-right">Amount (PKR)</th>
             <th>Type</th>
-            <th>Comments</th>
+            <th>Client</th>
+            <th>Project Name</th>
+            <th className="text-center">Project Dates</th>
+            <th className="text-right">Revisions Amount</th>
+            <th className="text-right">Discount</th>
             <th>Status</th>
             <th>Invoice</th>
+            <th>Receipt</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {status === "loading" ? (
             <tr>
-              <td colSpan="8" className="text-center">
+              <td colSpan="12" className="text-center">
                 <Spinner animation="border" />
               </td>
             </tr>
           ) : status === "failed" ? (
             <tr>
-              <td colSpan="8" className="text-center">
+              <td colSpan="12" className="text-center">
                 Error: {error}
               </td>
             </tr>
@@ -216,16 +352,51 @@ const Transactions = () => {
               <tr key={transaction.$id}>
                 <td>{index + 1}</td>
                 <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
-                <td>
-                  PKR {parseFloat(transaction.Amount).toFixed(2)} {/* Display amount directly in PKR */}
+                <td className="text-right">
+                  PKR {parseFloat(transaction.Amount).toFixed(2)}
                 </td>
                 <td>{transaction.Type}</td>
-                <td>{transaction.Comments}</td>
+                <td>{transaction.ClientName}</td>
+                <td>{transaction.ProjectName}</td>
+                <td className="text-center">
+                  {transaction.ProjectStartDate ? (
+                    <>
+                      {format(
+                        parseISO(transaction.ProjectStartDate),
+                        "dd/MM/yyyy"
+                      )}{" "}
+                      -{" "}
+                      {transaction.ProjectEndDate
+                        ? format(
+                            parseISO(transaction.ProjectEndDate),
+                            "dd/MM/yyyy"
+                          )
+                        : "N/A"}
+                    </>
+                  ) : (
+                    "N/A"
+                  )}
+                </td>
+                <td className="text-right">
+                  {transaction.RevisionsAmount
+                    ? transaction.RevisionsAmount
+                    : "N/A"}
+                </td>
+                <td className="text-right">
+                  {transaction.Discount ? transaction.Discount : "N/A"}
+                </td>
                 <td>{transaction.Status}</td>
                 <td>
                   {transaction.InvoiceId ? (
                     <a
-                      href={transaction.InvoiceId ? storage.getFilePreview('672078b60026aca47d2b', transaction.InvoiceId) : '#'}
+                      href={
+                        transaction.InvoiceId
+                          ? storage.getFilePreview(
+                              "672078b60026aca47d2b",
+                              transaction.InvoiceId
+                            )
+                          : "#"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -236,20 +407,48 @@ const Transactions = () => {
                   )}
                 </td>
                 <td>
-                  <Button
-                    variant="warning"
-                    onClick={() => handleShow("edit", transaction)}
-                    className="mr-2"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => handleDelete(transaction.$id, transaction.InvoiceId)}
-                    className="mx-3"
-                  >
-                    Delete
-                  </Button>
+                  {transaction.ReceiptId ? (
+                    <a
+                      href={
+                        transaction.ReceiptId
+                          ? storage.getFilePreview(
+                              "675d9f9000011543ff7b",
+                              transaction.ReceiptId
+                            )
+                          : "#"
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Receipt
+                    </a>
+                  ) : (
+                    "No Receipt"
+                  )}
+                </td>
+                <td style={{ padding: "10px" }}>
+                  <div className="d-flex justify-content-start">
+                    <Button
+                      variant="warning"
+                      onClick={() => handleShow("edit", transaction)}
+                      style={{ marginRight: "10px" }}
+                    >
+                      <BsPencilSquare />
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() =>
+                        handleDelete(
+                          transaction.$id,
+                          transaction.InvoiceId,
+                          transaction.ReceiptId
+                        )
+                      }
+                      style={{ marginLeft: "10px" }}
+                    >
+                      <BsTrash />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))
@@ -260,94 +459,287 @@ const Transactions = () => {
       {/* Modal for Add/Edit Transaction */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>{modalMode === "add" ? "Add Transaction" : "Edit Transaction"}</Modal.Title>
+          <Modal.Title>
+            {modalMode === "add" ? "Add Transaction" : "Edit Transaction"}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group controlId="formDate">
-              <Form.Label>Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={currentTransaction.Date}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Date: e.target.value })}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="formAmount">
-              <Form.Label>Amount</Form.Label>
-              <Form.Control
-                type="text"
-                value={currentTransaction.Amount}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Amount: e.target.value })}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="formType">
-              <Form.Label>Type</Form.Label>
-              <Form.Control
-                as="select"
-                value={currentTransaction.Type}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Type: e.target.value })}
-                required
-              >
-                <option value="">Select Type</option>
-                <option value="Income">Income</option>
-                <option value="Expense">Expense</option>
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="formComments">
-              <Form.Label>Comments</Form.Label>
-              <Form.Control
-                type="text"
-                value={currentTransaction.Comments}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Comments: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group controlId="formCurrency">
-              <Form.Label>Currency</Form.Label>
-              <Form.Control
-                as="select"
-                value={currentTransaction.Currency}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Currency: e.target.value })}
-              >
-                <option value="USD">USD</option>
-                <option value="GBP">GBP</option>
-                <option value="EUR">EUR</option>
-                <option value="PKR">PKR</option>
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="formStatus">
-              <Form.Label>Status</Form.Label>
-              <Form.Control
-                as="select"
-                value={currentTransaction.Status}
-                onChange={(e) => setCurrentTransaction({ ...currentTransaction, Status: e.target.value })}
-                required
-              >
-                <option value="Pending">Pending</option>
-                <option value="Paid">Paid</option>
-                <option value="Unpaid">Unpaid</option>
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="formInvoice">
-              <Form.Label>Invoice</Form.Label>
-              <Form.Control
-                type="file"
-                onChange={(e) => {
-                  setInvoiceFile(e.target.files[0]);
-                  setInvoiceFileName(e.target.files[0].name);
-                }}
-              />
-              {invoiceFileName && <p>Selected File: {invoiceFileName}</p>}
-            </Form.Group>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group controlId="formDate">
+                  <Form.Label>Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={currentTransaction.Date || ""}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        Date: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="formAmount">
+                  <Form.Label>Amount</Form.Label>
+                  <Form.Control
+                    placeholder="Enter Amount"
+                    type="text"
+                    value={currentTransaction.Amount}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        Amount: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group controlId="formType">
+                  <Form.Label>Type</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={currentTransaction.Type}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        Type: e.target.value,
+                      })
+                    }
+                    required
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Income">Income</option>
+                    <option value="Expense">Expense</option>
+                  </Form.Control>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="formCurrency">
+                  <Form.Label>Currency</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={currentTransaction.Currency}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        Currency: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="USD">USD</option>
+                    <option value="GBP">GBP</option>
+                    <option value="EUR">EUR</option>
+                    <option value="PKR">PKR</option>
+                  </Form.Control>
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group controlId="formClientName">
+                  <Form.Label>Client Name</Form.Label>
+                  <Form.Control
+                    placeholder="Enter Client Name"
+                    type="text"
+                    value={currentTransaction.ClientName}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        ClientName: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="formCompanyName">
+                  <Form.Label>Company Name</Form.Label>
+                  <Form.Control
+                    placeholder="Enter Company Name"
+                    type="text"
+                    value={currentTransaction.CompanyName}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        CompanyName: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group controlId="formProjectName">
+                  <Form.Label>Project Name</Form.Label>
+                  <Form.Control
+                    placeholder="Enter Project Name"
+                    type="text"
+                    value={currentTransaction.ProjectName}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        ProjectName: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="formRevisionsAmount">
+                  <Form.Label>Revisions Amount</Form.Label>
+                  <Form.Control
+                    placeholder="Enter Revisions Amount"
+                    type="number"
+                    value={currentTransaction.RevisionsAmount || ""}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        RevisionsAmount: e.target.value || "", // Handle empty value
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group controlId="formDiscount">
+                  <Form.Label>Discount</Form.Label>
+                  <Form.Control
+                    placeholder="Enter Discount"
+                    type="number"
+                    value={currentTransaction.Discount || ""}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        Discount: e.target.value || "", // Handle empty value
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="formStatus">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={currentTransaction.Status}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        Status: e.target.value,
+                      })
+                    }
+                    required
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Unpaid">Unpaid</option>
+                  </Form.Control>
+                </Form.Group>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group controlId="formProjectStartDate">
+                  <Form.Label>Project Start Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={currentTransaction.ProjectStartDate || ""}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        ProjectStartDate: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="formProjectEndDate">
+                  <Form.Label>Project End Date</Form.Label>
+
+                  <Form.Control
+                    type="date"
+                    value={currentTransaction.ProjectEndDate || ""}
+                    onChange={(e) =>
+                      setCurrentTransaction({
+                        ...currentTransaction,
+                        ProjectEndDate: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-12">
+                <Form.Group controlId="formInvoice">
+                  <Form.Label>Invoice</Form.Label>
+                  <Form.Control
+                    type="file"
+                    onChange={(e) => {
+                      setInvoiceFile(e.target.files[0]);
+                      setInvoiceFileName(e.target.files[0].name);
+                    }}
+                  />
+                  {invoiceFileName && <p>Selected file: {invoiceFileName}</p>}
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-12">
+                <Form.Group controlId="formReceipt">
+                  <Form.Label>Receipt</Form.Label>
+                  <Form.Control
+                    type="file"
+                    onChange={(e) => {
+                      setReceiptFile(e.target.files[0]);
+                      setReceiptFileName(e.target.files[0].name);
+                    }}
+                  />
+                  {receiptFileName && <p>Selected file: {receiptFileName}</p>}
+                </Form.Group>
+              </div>
+            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Close
+            <AiFillCloseCircle /> Close
           </Button>
-          <Button variant="primary" onClick={handleSave}>
-            {modalMode === "add" ? "Add Transaction" : "Update Transaction"}
+          <Button variant="primary" onClick={handleSave} disabled={isLoading}>
+            {isLoading ? (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : modalMode === "add" ? (
+              <>
+                <BsPlusSquare /> Add Transaction
+              </>
+            ) : (
+              <>
+                <AiFillSave /> Update Transaction
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>

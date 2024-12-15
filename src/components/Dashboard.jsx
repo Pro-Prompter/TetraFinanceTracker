@@ -4,6 +4,7 @@ import { Line, Bar } from "react-chartjs-2";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTransactions } from "../lib/redux/transactionsSlice";
+import { BiMoney, BiTrendingUp, BiTrendingDown } from "react-icons/bi";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -16,7 +17,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import "chartjs-plugin-autocolors"; 
+import "chartjs-plugin-autocolors";
 
 ChartJS.register(
   CategoryScale,
@@ -113,15 +114,20 @@ const Dashboard = () => {
               >
                 <Card className="income-card">
                   <Card.Body>
-                    <Card.Title>Total Income</Card.Title>
-                    <Card.Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+                    <Card.Title>
+                      <BiTrendingUp /> Total Income
+                    </Card.Title>
+                    <Card.Text style={{ fontSize: "2rem", fontWeight: "bold" }}>
                       PKR {totalIncome.toFixed(2)}
                     </Card.Text>
                   </Card.Body>
                 </Card>
               </motion.div>
             </Col>
-            <Col md={6} className="d-flex justify-content-center align-items-center">
+            <Col
+              md={6}
+              className="d-flex justify-content-center align-items-center"
+            >
               <div className="empty-space"></div>
             </Col>
             <Col md={3}>
@@ -132,8 +138,10 @@ const Dashboard = () => {
               >
                 <Card className="expenses-card">
                   <Card.Body>
-                    <Card.Title>Total Expenses</Card.Title>
-                    <Card.Text style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+                    <Card.Title>
+                      <BiTrendingDown /> Total Expenses
+                    </Card.Title>
+                    <Card.Text style={{ fontSize: "2rem", fontWeight: "bold" }}>
                       PKR {totalExpenses.toFixed(2)}
                     </Card.Text>
                   </Card.Body>
@@ -145,7 +153,9 @@ const Dashboard = () => {
             <Col md={6}>
               <Card>
                 <Card.Body>
-                  <Card.Title>Income & Expenses Over Time</Card.Title>
+                  <Card.Title>
+                    <BiMoney /> Income & Expenses Over Time
+                  </Card.Title>
                   <Line data={lineChartData} />
                 </Card.Body>
               </Card>
@@ -153,7 +163,9 @@ const Dashboard = () => {
             <Col md={6}>
               <Card>
                 <Card.Body>
-                  <Card.Title>Income vs Expenses</Card.Title>
+                  <Card.Title>
+                    <BiMoney /> Income vs Expenses
+                  </Card.Title>
                   <Bar data={barChartData} />
                 </Card.Body>
               </Card>
