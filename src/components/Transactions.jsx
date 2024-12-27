@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, Form, Modal, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { format, parseISO } from "date-fns";
-import { BsPencilSquare, BsTrash, BsPlusSquare } from "react-icons/bs";
+import { FaEdit, FaTrashAlt, FaPlusSquare } from "react-icons/fa";
 import { AiFillCloseCircle, AiFillSave } from "react-icons/ai";
 import {
   fetchTransactions,
@@ -174,6 +174,7 @@ const Transactions = () => {
 
   const handleSave = async () => {
     setIsLoading(true);
+
     if (
       !currentTransaction.Date ||
       !currentTransaction.Amount ||
@@ -199,10 +200,19 @@ const Transactions = () => {
       : null;
 
     try {
-      const [invoiceId, receiptId] = await Promise.all([
-        uploadInvoice(),
-        uploadReceipt(),
-      ]);
+      let invoiceId = currentTransaction.InvoiceId; // Default to existing ID
+      let receiptId = currentTransaction.ReceiptId;
+
+      // Upload new files only if they exist
+      if (invoiceFile) {
+        const invoiceResponse = await uploadInvoice();
+        invoiceId = invoiceResponse || invoiceId; // Update only if new upload is successful
+      }
+
+      if (receiptFile) {
+        const receiptResponse = await uploadReceipt();
+        receiptId = receiptResponse || receiptId;
+      }
 
       const transactionData = {
         Date: isoDate,
@@ -211,8 +221,8 @@ const Transactions = () => {
         Comments: currentTransaction.Comments,
         Currency: currentTransaction.Currency,
         Status: currentTransaction.Status,
-        InvoiceId: invoiceId || null,
-        ReceiptId: receiptId || null,
+        InvoiceId: invoiceId,
+        ReceiptId: receiptId,
         ClientName: currentTransaction.ClientName,
         CompanyName: currentTransaction.CompanyName,
         ProjectName: currentTransaction.ProjectName,
@@ -299,7 +309,7 @@ const Transactions = () => {
           onClick={() => handleShow("add")}
           className="my-4"
         >
-          <BsPlusSquare /> Add Transaction
+          <FaPlusSquare /> Add Transaction
         </Button>
         <Form.Group controlId="formFilterStatus" className="mb-0 mx-4">
           <Form.Control
@@ -325,6 +335,7 @@ const Transactions = () => {
             <th>Type</th>
             <th>Client</th>
             <th>Project Name</th>
+            <th className="text-center">Company Name</th>
             <th className="text-center">Project Dates</th>
             <th className="text-right">Revisions Amount</th>
             <th className="text-right">Discount</th>
@@ -358,6 +369,7 @@ const Transactions = () => {
                 <td>{transaction.Type}</td>
                 <td>{transaction.ClientName}</td>
                 <td>{transaction.ProjectName}</td>
+                <td>{transaction.CompanyName}</td>
                 <td className="text-center">
                   {transaction.ProjectStartDate ? (
                     <>
@@ -433,7 +445,7 @@ const Transactions = () => {
                       onClick={() => handleShow("edit", transaction)}
                       style={{ marginRight: "10px" }}
                     >
-                      <BsPencilSquare />
+                      <FaEdit />
                     </Button>
                     <Button
                       variant="danger"
@@ -446,7 +458,7 @@ const Transactions = () => {
                       }
                       style={{ marginLeft: "10px" }}
                     >
-                      <BsTrash />
+                      <FaTrashAlt />
                     </Button>
                   </div>
                 </td>
@@ -733,7 +745,7 @@ const Transactions = () => {
               />
             ) : modalMode === "add" ? (
               <>
-                <BsPlusSquare /> Add Transaction
+                  <FaPlusSquare /> Add Transaction
               </>
             ) : (
               <>

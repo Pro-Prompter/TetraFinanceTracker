@@ -1,38 +1,41 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { databases, ID } from '../appwrite';
-import axios from 'axios';
 
+// Constants for Database and Collection IDs
 const DATABASE_ID = '66ae058300333732f99a';
-const COLLECTION_ID = '66b076ea0017936bd88b';
+const COMMISSIONS_COLLECTION_ID = '66b076ea0017936bd88b';
+const TRANSACTIONS_COLLECTION_ID = '66b076ea0017936bd88b';
 
-// Fetch Commissions
+// Helper function to fetch data from a collection
+const fetchFromCollection = async (collectionId) => {
+  const response = await databases.listDocuments(DATABASE_ID, collectionId);
+  return response.documents;
+};
+
+// Fetch Commissions including related Project Names
 export const fetchCommissions = createAsyncThunk(
   'commissions/fetchCommissions',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID);
-      return response.documents;
+      // Fetch commissions and transactions
+      const [commissions, transactions] = await Promise.all([
+        fetchFromCollection(COMMISSIONS_COLLECTION_ID),
+        fetchFromCollection(TRANSACTIONS_COLLECTION_ID)
+      ]);
+
+      // Map transaction IDs to Project Names for easy lookup
+      const projectNames = transactions.reduce((acc, { $id, ProjectName }) => {
+        acc[$id] = ProjectName;
+        return acc;
+      }, {});
+
+      // Combine commissions with project names
+      return commissions.map((commission) => ({
+        ...commission,
+        ProjectName: projectNames[commission.ProjectName] || 'N/A', // Default to 'N/A' if no match
+      }));
     } catch (error) {
       return rejectWithValue(error.message);
-    }
-  }
-);
-
-// Fetch Conversion Rates
-export const fetchConversionRates = createAsyncThunk(
-  'commissions/fetchConversionRates',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/pkr.json');
-      return response.data;
-    } catch (error) {
-      // Fallback URL
-      try {
-        const response = await axios.get('https://latest.currency-api.pages.dev/v1/currencies/pkr.json');
-        return response.data;
-      } catch (fallbackError) {
-        return rejectWithValue('Failed to fetch conversion rates');
-      }
     }
   }
 );
@@ -42,7 +45,12 @@ export const addCommission = createAsyncThunk(
   'commissions/addCommission',
   async (commission, { rejectWithValue }) => {
     try {
-      const response = await databases.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), commission);
+      const response = await databases.createDocument(
+        DATABASE_ID,
+        COMMISSIONS_COLLECTION_ID,
+        ID.unique(),
+        commission
+      );
       return response;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -55,7 +63,12 @@ export const updateCommission = createAsyncThunk(
   'commissions/updateCommission',
   async (commission, { rejectWithValue }) => {
     try {
-      await databases.updateDocument(DATABASE_ID, COLLECTION_ID, commission.$id, commission);
+      await databases.updateDocument(
+        DATABASE_ID,
+        COMMISSIONS_COLLECTION_ID,
+        commission.$id,
+        commission
+      );
       return commission;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -68,7 +81,7 @@ export const deleteCommission = createAsyncThunk(
   'commissions/deleteCommission',
   async (id, { rejectWithValue }) => {
     try {
-      await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, id);
+      await databases.deleteDocument(DATABASE_ID, COMMISSIONS_COLLECTION_ID, id);
       return id;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -76,11 +89,11 @@ export const deleteCommission = createAsyncThunk(
   }
 );
 
+// Commission slice
 const commissionsSlice = createSlice({
   name: 'commissions',
   initialState: {
     commissions: [],
-    conversionRates: {},
     status: 'idle',
     error: null,
   },
@@ -94,17 +107,6 @@ const commissionsSlice = createSlice({
         state.commissions = action.payload;
       })
       .addCase(fetchCommissions.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
-      })
-      .addCase(fetchConversionRates.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(fetchConversionRates.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.conversionRates = action.payload;
-      })
-      .addCase(fetchConversionRates.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })
