@@ -97,46 +97,6 @@ const Dashboard = () => {
     ],
   };
 
-  // Easter Egg
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/egg.js/1.0/egg.min.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      const egg = new Egg();
-      egg
-        .addCode("hi", function () {
-          const eggGif = document.createElement("img");
-          eggGif.src =
-            "https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif";
-          eggGif.style.position = "fixed";
-          eggGif.style.top = "50%";
-          eggGif.style.left = "50%";
-          eggGif.style.transform = "translate(-50%, -50%)";
-          eggGif.style.zIndex = "9999";
-          eggGif.id = "easter-egg-gif";
-
-          document.body.appendChild(eggGif);
-
-          // Remove the GIF after 2 seconds
-          setTimeout(() => {
-            const existingGif = document.getElementById("easter-egg-gif");
-            if (existingGif) document.body.removeChild(existingGif);
-          }, 2000);
-        })
-        .addHook(function () {
-          console.log("Easter Egg triggered: " + this.activeEgg.keys);
-        })
-        .listen();
-    };
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
   return (
     <div className="pt bg-white">
       {status === "loading" ? (
