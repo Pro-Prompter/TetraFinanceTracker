@@ -26,18 +26,6 @@ export const login = createAsyncThunk(
     }
 );
 
-export const signup = createAsyncThunk(
-    'auth/signup',
-    async ({ email, password, name }, { rejectWithValue }) => {
-        try {
-            await auth.createAccount({ email, password, name });
-            return { authenticated: true };
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
 export const logout = createAsyncThunk(
     'auth/logout',
     async (_, { rejectWithValue }) => {
@@ -82,17 +70,6 @@ const authSlice = createSlice({
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Login failed';
-            })
-            .addCase(signup.pending, (state) => {
-                state.status = 'loading';
-            })
-            .addCase(signup.fulfilled, (state) => {
-                state.status = 'succeeded';
-                state.isAuthenticated = true;
-            })
-            .addCase(signup.rejected, (state, action) => {
-                state.status = 'failed';
-                state.error = action.payload || 'Signup failed';
             })
             .addCase(logout.pending, (state) => {
                 state.status = 'loading';

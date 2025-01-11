@@ -19,6 +19,7 @@ const Transactions = () => {
     (state) => state.transactions
   );
   const [filterStatus, setFilterStatus] = useState("All");
+  const [filterType, setFilterType] = useState("All");
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [currentTransaction, setCurrentTransaction] = useState({
@@ -296,8 +297,10 @@ const Transactions = () => {
     }
   };
 
-  const filteredTransactions = transactions.filter((transaction) =>
-    filterStatus === "All" ? true : transaction.Status === filterStatus
+  const filteredTransactions = transactions.filter(
+    (transaction) =>
+      (filterStatus === "All" || transaction.Status === filterStatus) &&
+      (filterType === "All" || transaction.Type === filterType)
   );
 
   return (
@@ -311,7 +314,8 @@ const Transactions = () => {
         >
           <FaPlusSquare /> Add Transaction
         </Button>
-        <Form.Group controlId="formFilterStatus" className="mb-0 mx-4">
+        {/* Status Filter */}
+        <Form.Group controlId="formFilterStatus" className="mb-0 mx-2">
           <Form.Control
             as="select"
             value={filterStatus}
@@ -324,22 +328,32 @@ const Transactions = () => {
             <option value="Unpaid">Unpaid</option>
           </Form.Control>
         </Form.Group>
+        {/* Type Filter */}
+        <Form.Group controlId="formFilterType" className="mb-0 mx-2">
+          <Form.Control
+            as="select"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            size="sm"
+          >
+            <option value="All">All</option>
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+          </Form.Control>
+        </Form.Group>
       </div>
 
-      <Table striped bordered hover responsive className="mt-3">
+      <Table striped bordered hover responsive className="mt-3 table">
         <thead className="table-dark">
           <tr>
             <th>#</th>
             <th>Date</th>
-            <th className="text-right">Amount (PKR)</th>
-            <th>Type</th>
+            <th className="text-right">Amount</th>
             <th>Client</th>
             <th>Project Name</th>
             <th className="text-center">Company Name</th>
             <th className="text-center">Project Dates</th>
-            <th className="text-right">Revisions Amount</th>
             <th className="text-right">Discount</th>
-            <th>Status</th>
             <th>Invoice</th>
             <th>Receipt</th>
             <th>Actions</th>
@@ -348,13 +362,13 @@ const Transactions = () => {
         <tbody>
           {status === "loading" ? (
             <tr>
-              <td colSpan="12" className="text-center">
+              <td colSpan="10" className="text-center">
                 <Spinner animation="border" />
               </td>
             </tr>
           ) : status === "failed" ? (
             <tr>
-              <td colSpan="12" className="text-center">
+              <td colSpan="10" className="text-center">
                 Error: {error}
               </td>
             </tr>
@@ -366,10 +380,9 @@ const Transactions = () => {
                 <td className="text-right">
                   PKR {parseFloat(transaction.Amount).toFixed(2)}
                 </td>
-                <td>{transaction.Type}</td>
-                <td>{transaction.ClientName}</td>
-                <td>{transaction.ProjectName}</td>
-                <td>{transaction.CompanyName}</td>
+                <td>{transaction.ClientName || "N/A"}</td>
+                <td>{transaction.ProjectName || "N/A"}</td>
+                <td>{transaction.CompanyName || "N/A"}</td>
                 <td className="text-center">
                   {transaction.ProjectStartDate ? (
                     <>
@@ -390,25 +403,15 @@ const Transactions = () => {
                   )}
                 </td>
                 <td className="text-right">
-                  {transaction.RevisionsAmount
-                    ? transaction.RevisionsAmount
-                    : "N/A"}
-                </td>
-                <td className="text-right">
                   {transaction.Discount ? transaction.Discount : "N/A"}
                 </td>
-                <td>{transaction.Status}</td>
                 <td>
                   {transaction.InvoiceId ? (
                     <a
-                      href={
+                      href={storage.getFilePreview(
+                        "672078b60026aca47d2b",
                         transaction.InvoiceId
-                          ? storage.getFilePreview(
-                              "672078b60026aca47d2b",
-                              transaction.InvoiceId
-                            )
-                          : "#"
-                      }
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -421,14 +424,10 @@ const Transactions = () => {
                 <td>
                   {transaction.ReceiptId ? (
                     <a
-                      href={
+                      href={storage.getFilePreview(
+                        "675d9f9000011543ff7b",
                         transaction.ReceiptId
-                          ? storage.getFilePreview(
-                              "675d9f9000011543ff7b",
-                              transaction.ReceiptId
-                            )
-                          : "#"
-                      }
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -438,7 +437,7 @@ const Transactions = () => {
                     "No Receipt"
                   )}
                 </td>
-                <td style={{ padding: "10px" }}>
+                <td>
                   <div className="d-flex justify-content-start">
                     <Button
                       variant="warning"
@@ -456,7 +455,6 @@ const Transactions = () => {
                           transaction.ReceiptId
                         )
                       }
-                      style={{ marginLeft: "10px" }}
                     >
                       <FaTrashAlt />
                     </Button>
@@ -745,7 +743,7 @@ const Transactions = () => {
               />
             ) : modalMode === "add" ? (
               <>
-                  <FaPlusSquare /> Add Transaction
+                <FaPlusSquare /> Add Transaction
               </>
             ) : (
               <>

@@ -19,6 +19,7 @@ import {
 } from "chart.js";
 import "chartjs-plugin-autocolors";
 
+// Register chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -37,6 +38,9 @@ const Dashboard = () => {
 
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [totalUSD, setTotalUSD] = useState(0);
+  const [totalGBP, setTotalGBP] = useState(0);
+  const [totalEUR, setTotalEUR] = useState(0);
 
   useEffect(() => {
     dispatch(fetchTransactions());
@@ -50,14 +54,32 @@ const Dashboard = () => {
       const expenses = transactions
         .filter((t) => t.Type === "Expense")
         .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
+      const usd = transactions
+        .filter((t) => t.Currency === "USD")
+        .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
+      const gbp = transactions
+        .filter((t) => t.Currency === "GBP")
+        .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
+      const eur = transactions
+        .filter((t) => t.Currency === "EUR")
+        .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
 
       setTotalIncome(income);
       setTotalExpenses(expenses);
+      setTotalUSD(usd);
+      setTotalGBP(gbp);
+      setTotalEUR(eur);
     }
   }, [transactions, status]);
 
+  // Format dates to show only the date part (without time)
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(); // Customize format if needed
+  };
+
   const lineChartData = {
-    labels: transactions.map((t) => t.Date).reverse(),
+    labels: transactions.map((t) => formatDate(t.Date)).reverse(), // Use formatted dates
     datasets: [
       {
         label: "Income",
@@ -124,12 +146,31 @@ const Dashboard = () => {
                 </Card>
               </motion.div>
             </Col>
-            <Col
-              md={6}
-              className="d-flex justify-content-center align-items-center"
-            >
-              <div className="empty-space"></div>
+            <Col md={6}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="currency-card text-center">
+                  <Card.Body>
+                    <Card.Title>Currency Totals</Card.Title>
+                    <div>
+                      <div>
+                        <strong>USD:</strong> {totalUSD.toFixed(2)} USD
+                      </div>
+                      <div>
+                        <strong>GBP:</strong> {totalGBP.toFixed(2)} GBP
+                      </div>
+                      <div>
+                        <strong>EUR:</strong> {totalEUR.toFixed(2)} EUR
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </motion.div>
             </Col>
+
             <Col md={3}>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -149,6 +190,8 @@ const Dashboard = () => {
               </motion.div>
             </Col>
           </Row>
+
+          {/* Charts */}
           <Row className="mt-4">
             <Col md={6}>
               <Card>

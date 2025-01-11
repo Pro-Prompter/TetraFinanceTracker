@@ -246,3 +246,28 @@ nav .nav-link {
 .currency {
   font-size: 1.2rem;
 }
+/* Make the header row bold and more spaced out */
+.table th {
+  font-weight: bold;
+  text-align: center;
+  padding: 20px 30px;
+  /* Increased horizontal padding for wider header */
+  white-space: nowrap;
+  /* Prevent text wrapping in header cells */
+}
+
+/* Increase the width of the table */
+.table {
+  width: 100%;
+}
+
+/* Increase table borders and row height */
+.table-bordered {
+  border-width: 2px;
+}
+
+.table td,
+.table th {
+  height: 60px;
+  /* Increase row height */
+}

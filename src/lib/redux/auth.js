@@ -10,18 +10,6 @@ export class Auth {
             .setProject("66adcdf60024b7054a30"); // Your Appwrite project ID
         this.account = new Account(this.client);
     }
-
-    async createAccount({ email, password, name }) {
-        try {
-            const userAccount = await this.account.create(ID.unique(), email, password, name);
-            if (userAccount) {
-                return await this.login({ email, password }); // Log in the user
-            }
-        } catch (error) {
-            throw error;
-        }
-    }
-
     async login({ email, password }) {
         try {
             return await this.account.createEmailPasswordSession(email, password);
@@ -34,7 +22,7 @@ export class Auth {
         try {
             return await this.account.get();
         } catch (error) {
-            return null; // Return null if the user is not authenticated
+            return null;
         }
     }
 
