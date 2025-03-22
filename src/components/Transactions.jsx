@@ -3,21 +3,35 @@ import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, Form, Modal, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { format, parseISO } from "date-fns";
-import { FaEdit, FaTrashAlt, FaPlusSquare } from "react-icons/fa";
+import {
+  FaEdit,
+  FaTrashAlt,
+  FaPlusSquare,
+  FaArrowLeft,
+  FaArrowRight,
+} from "react-icons/fa";
 import { AiFillCloseCircle, AiFillSave } from "react-icons/ai";
 import {
   fetchTransactions,
   addTransaction,
   updateTransaction,
   deleteTransaction,
+  resetPagination,
 } from "../lib/redux/transactionsSlice";
 import { storage, ID } from "../lib/appwrite";
 
 const Transactions = () => {
   const dispatch = useDispatch();
-  const { transactions, status, error } = useSelector(
-    (state) => state.transactions
-  );
+  const {
+    documents: transactions,
+    nextCursor,
+    prevCursor,
+    status,
+    error,
+  } = useSelector((state) => state.transactions);
+
+  const ITEMS_PER_PAGE = 10;
+  const [itemsCountStart, setItemsCountStart] = useState(1);
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterType, setFilterType] = useState("All");
   const [showModal, setShowModal] = useState(false);
@@ -45,8 +59,38 @@ const Transactions = () => {
   const [receiptFileName, setReceiptFileName] = useState("");
 
   useEffect(() => {
-    dispatch(fetchTransactions());
+    dispatch(fetchTransactions({}));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!prevCursor) {
+      setItemsCountStart(1);
+    }
+  }, [prevCursor]);
+
+  const handleNextPage = () => {
+    if (nextCursor) {
+      dispatch(
+        fetchTransactions({
+          cursor: nextCursor,
+          direction: "next",
+        })
+      );
+      setItemsCountStart((prev) => prev + ITEMS_PER_PAGE);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (prevCursor) {
+      dispatch(
+        fetchTransactions({
+          cursor: prevCursor,
+          direction: "prev",
+        })
+      );
+      setItemsCountStart((prev) => prev - ITEMS_PER_PAGE);
+    }
+  };
 
   const handleShow = async (mode, transaction = {}) => {
     if (mode === "edit" && transaction) {
@@ -73,35 +117,11 @@ const Transactions = () => {
           : "",
       };
       setCurrentTransaction(formattedTransaction);
-      setInvoiceFile(transactions.setInvoiceFile);
-      setInvoiceFileName(transactions.setInvoiceFileName);
-      setReceiptFile(transactions.setReceiptFile);
-      setReceiptFileName(transactions.setReceiptFileName);
-
-      if (transaction.InvoiceId) {
-        try {
-          const file = await storage.getFile(
-            "672078b60026aca47d2b",
-            transaction.InvoiceId
-          );
-          setInvoiceFileName(file.name);
-        } catch (error) {
-          console.error("Error fetching file:", error);
-        }
-      }
-
-      if (transaction.ReceiptId) {
-        try {
-          const file = await storage.getFile(
-            "675d9f9000011543ff7b",
-            transaction.ReceiptId
-          );
-          setReceiptFileName(file.name);
-        } catch (error) {
-          console.error("Error fetching file:", error);
-        }
-      }
+      setInvoiceFileName(transaction.InvoiceId ? "Existing File" : "");
+      setReceiptFileName(transaction.ReceiptId ? "Existing File" : "");
     } else {
+      setFilterStatus("All");
+      setFilterType("All");
       resetTransaction();
     }
     setShowModal(true);
@@ -135,7 +155,6 @@ const Transactions = () => {
 
   const uploadInvoice = async () => {
     if (!invoiceFile) return null;
-
     try {
       const response = await storage.createFile(
         "672078b60026aca47d2b",
@@ -155,7 +174,6 @@ const Transactions = () => {
 
   const uploadReceipt = async () => {
     if (!receiptFile) return null;
-
     try {
       const response = await storage.createFile(
         "675d9f9000011543ff7b",
@@ -175,7 +193,6 @@ const Transactions = () => {
 
   const handleSave = async () => {
     setIsLoading(true);
-
     if (
       !currentTransaction.Date ||
       !currentTransaction.Amount ||
@@ -192,22 +209,21 @@ const Transactions = () => {
       return;
     }
 
-    const isoDate = format(parseISO(currentTransaction.Date), "yyyy-MM-dd");
-    const isoProjectStartDate = currentTransaction.ProjectStartDate
-      ? format(parseISO(currentTransaction.ProjectStartDate), "yyyy-MM-dd")
-      : null;
-    const isoProjectEndDate = currentTransaction.ProjectEndDate
-      ? format(parseISO(currentTransaction.ProjectEndDate), "yyyy-MM-dd")
-      : null;
-
     try {
-      let invoiceId = currentTransaction.InvoiceId; // Default to existing ID
+      const isoDate = format(parseISO(currentTransaction.Date), "yyyy-MM-dd");
+      const isoProjectStartDate = currentTransaction.ProjectStartDate
+        ? format(parseISO(currentTransaction.ProjectStartDate), "yyyy-MM-dd")
+        : null;
+      const isoProjectEndDate = currentTransaction.ProjectEndDate
+        ? format(parseISO(currentTransaction.ProjectEndDate), "yyyy-MM-dd")
+        : null;
+
+      let invoiceId = currentTransaction.InvoiceId;
       let receiptId = currentTransaction.ReceiptId;
 
-      // Upload new files only if they exist
       if (invoiceFile) {
         const invoiceResponse = await uploadInvoice();
-        invoiceId = invoiceResponse || invoiceId; // Update only if new upload is successful
+        invoiceId = invoiceResponse || invoiceId;
       }
 
       if (receiptFile) {
@@ -235,6 +251,9 @@ const Transactions = () => {
 
       if (modalMode === "add") {
         await dispatch(addTransaction(transactionData));
+        dispatch(resetPagination());
+        dispatch(fetchTransactions({}));
+        setItemsCountStart(1);
         Swal.fire({
           title: "Success!",
           text: "Transaction added successfully.",
@@ -244,12 +263,14 @@ const Transactions = () => {
         await dispatch(
           updateTransaction({ ...transactionData, $id: currentTransaction.$id })
         );
+        dispatch(fetchTransactions({}));
         Swal.fire({
           title: "Success!",
           text: "Transaction updated successfully.",
           icon: "success",
         });
       }
+
       handleClose();
     } catch (error) {
       Swal.fire({
@@ -297,11 +318,12 @@ const Transactions = () => {
     }
   };
 
-  const filteredTransactions = transactions.filter(
-    (transaction) =>
-      (filterStatus === "All" || transaction.Status === filterStatus) &&
-      (filterType === "All" || transaction.Type === filterType)
-  );
+  const filteredTransactions =
+    transactions?.filter(
+      (transaction) =>
+        (filterStatus === "All" || transaction.Status === filterStatus) &&
+        (filterType === "All" || transaction.Type === filterType)
+    ) || [];
 
   return (
     <div>
@@ -314,7 +336,6 @@ const Transactions = () => {
         >
           <FaPlusSquare /> Add Transaction
         </Button>
-        {/* Status Filter */}
         <Form.Group controlId="formFilterStatus" className="mb-0 mx-2">
           <Form.Control
             as="select"
@@ -328,7 +349,6 @@ const Transactions = () => {
             <option value="Unpaid">Unpaid</option>
           </Form.Control>
         </Form.Group>
-        {/* Type Filter */}
         <Form.Group controlId="formFilterType" className="mb-0 mx-2">
           <Form.Control
             as="select"
@@ -375,7 +395,7 @@ const Transactions = () => {
           ) : (
             filteredTransactions.map((transaction, index) => (
               <tr key={transaction.$id}>
-                <td>{index + 1}</td>
+                <td>{itemsCountStart + index}</td>
                 <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
                 <td className="text-right">
                   PKR {parseFloat(transaction.Amount).toFixed(2)}
@@ -466,6 +486,31 @@ const Transactions = () => {
         </tbody>
       </Table>
 
+      <div className="d-flex justify-content-between mt-4">
+        <Button
+          variant="fill-primary"
+          onClick={handlePrevPage}
+          disabled={!prevCursor || status === "loading"}
+          className="d-flex align-items-center"
+        >
+          < FaArrowLeft />
+        </Button>
+
+        <div className="text-muted d-flex align-items-center">
+          Showing {itemsCountStart} -{" "}
+          {itemsCountStart + (transactions?.length || 0) - 1}
+        </div>
+
+        <Button
+          variant="fill-primary"
+          onClick={handleNextPage}
+          disabled={!nextCursor || status === "loading"}
+          className="d-flex align-items-center"
+        >
+          <FaArrowRight />
+        </Button>
+      </div>
+      <div className="mb-4"></div>
       {/* Modal for Add/Edit Transaction */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>

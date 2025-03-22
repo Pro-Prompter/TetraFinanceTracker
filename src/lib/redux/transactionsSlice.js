@@ -1,26 +1,46 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { databases, ID } from "../appwrite";
+import { databases, ID, Query } from "../appwrite";
 
 const DATABASE_ID = "66ae058300333732f99a";
 const COLLECTION_ID = "66b076ea0017936bd88b";
+const ITEMS_PER_PAGE = 10;
 
-// Fetch Transactions
 export const fetchTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
-  async (_, { rejectWithValue }) => {
+  async ({ cursor, direction }, { rejectWithValue }) => {
     try {
+      const queries = [
+        Query.limit(ITEMS_PER_PAGE),
+        Query.orderDesc("Date"),
+      ];
+
+      if (cursor) {
+        direction === 'next' 
+          ? queries.push(Query.cursorAfter(cursor))
+          : queries.push(Query.cursorBefore(cursor));
+      }
+
       const response = await databases.listDocuments(
         DATABASE_ID,
-        COLLECTION_ID
+        COLLECTION_ID,
+        queries
       );
-      return response.documents;
+
+      return {
+        documents: response.documents,
+        nextCursor: response.documents.length >= ITEMS_PER_PAGE 
+          ? response.documents[response.documents.length - 1].$id 
+          : null,
+        prevCursor: response.documents.length > 0 
+          ? response.documents[0].$id 
+          : null
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-// Add Transaction
 export const addTransaction = createAsyncThunk(
   "transactions/addTransaction",
   async (transaction, { rejectWithValue }) => {
@@ -38,7 +58,6 @@ export const addTransaction = createAsyncThunk(
   }
 );
 
-// Update Transaction
 export const updateTransaction = createAsyncThunk(
   "transactions/updateTransaction",
   async (transaction, { rejectWithValue }) => {
@@ -56,7 +75,6 @@ export const updateTransaction = createAsyncThunk(
   }
 );
 
-// Delete Transaction
 export const deleteTransaction = createAsyncThunk(
   "transactions/deleteTransaction",
   async (id, { rejectWithValue }) => {
@@ -72,9 +90,18 @@ export const deleteTransaction = createAsyncThunk(
 const transactionsSlice = createSlice({
   name: "transactions",
   initialState: {
-    transactions: [],
+    documents: [],
+    nextCursor: null,
+    prevCursor: null,
     status: "idle",
     error: null,
+  },
+  reducers: {
+    resetPagination: (state) => {
+      state.documents = [];
+      state.nextCursor = null;
+      state.prevCursor = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -83,29 +110,34 @@ const transactionsSlice = createSlice({
       })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.transactions = action.payload;
+        state.documents = action.payload.documents;
+        state.nextCursor = action.payload.nextCursor;
+        state.prevCursor = action.payload.prevCursor;
       })
       .addCase(fetchTransactions.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
-      .addCase(addTransaction.fulfilled, (state, action) => {
-        state.transactions.push(action.payload);
+      .addCase(addTransaction.fulfilled, (state) => {
+        state.status = "idle";
+        state.nextCursor = null;
+        state.prevCursor = null;
       })
       .addCase(updateTransaction.fulfilled, (state, action) => {
-        const index = state.transactions.findIndex(
+        const index = state.documents.findIndex(
           (t) => t.$id === action.payload.$id
         );
         if (index !== -1) {
-          state.transactions[index] = action.payload;
+          state.documents[index] = action.payload;
         }
       })
       .addCase(deleteTransaction.fulfilled, (state, action) => {
-        state.transactions = state.transactions.filter(
+        state.documents = state.documents.filter(
           (t) => t.$id !== action.payload
         );
       });
   },
 });
 
+export const { resetPagination } = transactionsSlice.actions;
 export default transactionsSlice.reducer;

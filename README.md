@@ -1,11 +1,10 @@
 # Tetra Finance Tracker
 
-This project is a finance management system designed for Tetra Studio to handle client payments, savings, team member commissions, and more. It is built using modern web technologies, including React, Vite, Bootstrap, and Appwrite.
+This project is a finance management system designed for Tetra Studio to handle client payments, savings, and more. It is built using modern web technologies, including React, Vite, Bootstrap, and Appwrite.
 
 ## Features
 
 - **Client Payments:** Track payments made by clients, pending payments, and total amounts.
-- **Team Member Commissions:** Calculate and manage commissions for team members.
 - **Money Sources:** Track the sources of incoming money.
 - **Dashboard:** Overview of all financial data.
 - **CRUD Operations:** Create, Read, Update, Delete for clients, payments, commissions, etc.
@@ -18,7 +17,7 @@ This project is a finance management system designed for Tetra Studio to handle 
 - **Form Handling:** react-currency-input-field
 - **Animations:** framer-motion
 - **API Calls:** Axios
-- **Notifications:** SweetAlert2
+- **Alerts:** SweetAlert2
 - **Backend:** Appwrite
 - **Deployment** Vercel
 
@@ -67,7 +66,6 @@ src/
 ├── components/
 │   ├── Dashboard.jsx
 │   ├── Navbar.jsx
-│   ├── TeamCommissions.jsx
 │   ├── Transactions.jsx
 ├── lib/
 │   ├── appwrite.js

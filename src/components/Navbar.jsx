@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { Navbar, Nav, Button } from "react-bootstrap";
 import { logout } from "../lib/redux/authSlice";
-import { BiHomeAlt, BiMoney, BiGroup, BiLogOutCircle } from "react-icons/bi";
+import { BiHomeAlt, BiMoney, BiLogOutCircle } from "react-icons/bi";
 import "../App.css";
 
 const NavigationBar = () => {
@@ -39,9 +39,6 @@ const NavigationBar = () => {
           </Nav.Link>
           <Nav.Link as={Link} to="/transactions" className="nav-item">
             <BiMoney /> Transactions
-          </Nav.Link>
-          <Nav.Link as={Link} to="/team-commissions" className="nav-item">
-            <BiGroup /> Commissions
           </Nav.Link>
         </Nav>
         <Navbar.Text className="ml-auto">

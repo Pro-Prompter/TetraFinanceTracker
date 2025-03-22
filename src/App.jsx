@@ -5,7 +5,6 @@ import { checkAuth } from "./lib/redux/authSlice";
 import NavigationBar from "./components/Navbar";
 import Dashboard from "./components/Dashboard";
 import Transactions from "./components/Transactions";
-import TeamCommissions from "./components/TeamCommissions";
 import Auth from "./lib/Auth";
 import ClipLoader from "react-spinners/ClipLoader";
 
@@ -59,10 +58,6 @@ const App = () => {
                     <Route path="/" element={<Dashboard />} />
 
                     <Route path="/transactions" element={<Transactions />} />
-                    <Route
-                      path="/team-commissions"
-                      element={<TeamCommissions />}
-                    />
 
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>

@@ -34,7 +34,7 @@ ChartJS.register(
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const { transactions, status } = useSelector((state) => state.transactions);
+  const { documents: transactions, status } = useSelector((state) => state.transactions);
 
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
@@ -43,11 +43,11 @@ const Dashboard = () => {
   const [totalEUR, setTotalEUR] = useState(0);
 
   useEffect(() => {
-    dispatch(fetchTransactions());
+    dispatch(fetchTransactions({}));
   }, [dispatch]);
 
   useEffect(() => {
-    if (status === "succeeded") {
+    if (status === "succeeded" && transactions) {
       const income = transactions
         .filter((t) => t.Type === "Income")
         .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
@@ -72,21 +72,20 @@ const Dashboard = () => {
     }
   }, [transactions, status]);
 
-  // Format dates to show only the date part (without time)
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(); // Customize format if needed
+    return date.toLocaleDateString();
   };
 
   const lineChartData = {
-    labels: transactions.map((t) => formatDate(t.Date)).reverse(), // Use formatted dates
+    labels: transactions?.map((t) => formatDate(t.Date))?.reverse() || [],
     datasets: [
       {
         label: "Income",
         data: transactions
-          .filter((t) => t.Type === "Income")
-          .map((t) => parseFloat(t.Amount))
-          .reverse(),
+          ?.filter((t) => t.Type === "Income")
+          ?.map((t) => parseFloat(t.Amount))
+          ?.reverse() || [],
         borderColor: "#00C853",
         backgroundColor: "rgba(0, 200, 83, 0.2)",
         borderWidth: 1,
@@ -95,9 +94,9 @@ const Dashboard = () => {
       {
         label: "Expenses",
         data: transactions
-          .filter((t) => t.Type === "Expense")
-          .map((t) => parseFloat(t.Amount))
-          .reverse(),
+          ?.filter((t) => t.Type === "Expense")
+          ?.map((t) => parseFloat(t.Amount))
+          ?.reverse() || [],
         borderColor: "#D50032",
         backgroundColor: "rgba(213, 0, 50, 0.2)",
         borderWidth: 1,
@@ -191,7 +190,6 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-          {/* Charts */}
           <Row className="mt-4">
             <Col md={6}>
               <Card>
