@@ -9,7 +9,11 @@ export const fetchTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
   async ({ cursor, direction }, { rejectWithValue }) => {
     try {
-      const queries = [Query.limit(ITEMS_PER_PAGE), Query.orderDesc("Date")];
+      const queries = [
+        Query.limit(ITEMS_PER_PAGE),
+        Query.orderDesc("Date"),  // Ensure descending order
+        Query.orderDesc("$createdAt")  // Add secondary sort by creation time
+      ];
 
       if (cursor) {
         direction === "next"

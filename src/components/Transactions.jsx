@@ -143,7 +143,7 @@ const Transactions = () => {
 
   const resetTransaction = () => {
     setCurrentTransaction({
-      Date: "",
+      Date: new Date().toISOString().split("T")[0],
       Amount: "",
       Type: "",
       Comments: "",
@@ -457,7 +457,7 @@ const Transactions = () => {
           ) : (
             filteredTransactions.map((transaction, index) => (
               <tr key={transaction.$id}>
-                <td>{itemsCountStart + index}</td>
+                <td>{filteredTransactions.length - index}</td>
                 <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
                 <td className="text-right">
                   PKR {parseFloat(transaction.Amount).toFixed(2)}
@@ -559,8 +559,8 @@ const Transactions = () => {
         </Button>
 
         <div className="text-muted d-flex align-items-center">
-          Showing {itemsCountStart} -{" "}
-          {itemsCountStart + (filteredTransactions?.length || 0) - 1}
+          Showing {transactions.length ? 1 : 0} - {transactions.length}
+          (Total: {transactions.length})
         </div>
 
         <Button
@@ -589,6 +589,7 @@ const Transactions = () => {
                   <Form.Control
                     type="date"
                     value={currentTransaction.Date || ""}
+                    max={new Date().toISOString().split("T")[0]}
                     onChange={(e) =>
                       setCurrentTransaction({
                         ...currentTransaction,
