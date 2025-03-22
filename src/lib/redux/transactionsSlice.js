@@ -9,13 +9,10 @@ export const fetchTransactions = createAsyncThunk(
   "transactions/fetchTransactions",
   async ({ cursor, direction }, { rejectWithValue }) => {
     try {
-      const queries = [
-        Query.limit(ITEMS_PER_PAGE),
-        Query.orderDesc("Date"),
-      ];
+      const queries = [Query.limit(ITEMS_PER_PAGE), Query.orderDesc("Date")];
 
       if (cursor) {
-        direction === 'next' 
+        direction === "next"
           ? queries.push(Query.cursorAfter(cursor))
           : queries.push(Query.cursorBefore(cursor));
       }
@@ -28,13 +25,29 @@ export const fetchTransactions = createAsyncThunk(
 
       return {
         documents: response.documents,
-        nextCursor: response.documents.length >= ITEMS_PER_PAGE 
-          ? response.documents[response.documents.length - 1].$id 
-          : null,
-        prevCursor: response.documents.length > 0 
-          ? response.documents[0].$id 
-          : null
+        nextCursor:
+          response.documents.length >= ITEMS_PER_PAGE
+            ? response.documents[response.documents.length - 1].$id
+            : null,
+        prevCursor:
+          response.documents.length > 0 ? response.documents[0].$id : null,
       };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const fetchAllTransactions = createAsyncThunk(
+  "transactions/fetchAllTransactions",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTION_ID,
+        [Query.orderDesc("Date")]
+      );
+      return response.documents;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -93,8 +106,11 @@ const transactionsSlice = createSlice({
     documents: [],
     nextCursor: null,
     prevCursor: null,
+    totalIncome: 0,
+    totalExpense: 0,
     status: "idle",
     error: null,
+    allTransactions: [],
   },
   reducers: {
     resetPagination: (state) => {
@@ -117,6 +133,25 @@ const transactionsSlice = createSlice({
       .addCase(fetchTransactions.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
+      })
+      .addCase(fetchAllTransactions.fulfilled, (state, action) => {
+        state.allTransactions = action.payload;
+
+        // Calculate totalIncome with proper number conversion
+        state.totalIncome = action.payload
+          .filter((transaction) => transaction.Type === "Income")
+          .reduce((sum, transaction) => {
+            // Ensure we're adding numbers, not concatenating strings
+            return sum + parseFloat(transaction.Amount || 0);
+          }, 0);
+
+        // Calculate totalExpense with proper number conversion
+        state.totalExpense = action.payload
+          .filter((transaction) => transaction.Type === "Expense")
+          .reduce((sum, transaction) => {
+            // Ensure we're adding numbers, not concatenating strings
+            return sum + parseFloat(transaction.Amount || 0);
+          }, 0);
       })
       .addCase(addTransaction.fulfilled, (state) => {
         state.status = "idle";

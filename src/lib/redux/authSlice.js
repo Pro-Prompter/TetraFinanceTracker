@@ -1,13 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import auth from './auth';
+import { Client, Account } from 'appwrite';
+
+// Set up Appwrite Client
+const client = new Client().setEndpoint("https://cloud.appwrite.io/v1").setProject("66adcdf60024b7054a30"); // Your Appwrite endpoint and project ID
+const account = new Account(client);
 
 // Thunks
 export const checkAuth = createAsyncThunk(
     'auth/checkAuth',
     async (_, { rejectWithValue }) => {
         try {
-            const res = await auth.getCurrentUser();
-            return { authenticated: !!res };
+            const user = await account.get();
+            return { authenticated: !!user };
         } catch (error) {
             return { authenticated: false };
         }
@@ -18,7 +22,7 @@ export const login = createAsyncThunk(
     'auth/login',
     async ({ email, password }, { rejectWithValue }) => {
         try {
-            const res = await auth.login({ email, password });
+            await account.createEmailPasswordSession(email, password);
             return { authenticated: true };
         } catch (error) {
             return rejectWithValue(error.message);
@@ -30,7 +34,7 @@ export const logout = createAsyncThunk(
     'auth/logout',
     async (_, { rejectWithValue }) => {
         try {
-            await auth.logout();
+            await account.deleteSession("current");
             return { authenticated: false };
         } catch (error) {
             return rejectWithValue(error.message);

@@ -71,6 +71,7 @@ src/
 │   ├── appwrite.js
 │   ├── Auth.jsx
 ├── redux/
+│   ├── authSlice.js
 │   ├── store.js
 │   ├── transactionSlice.js
 ├── App.css

@@ -3,7 +3,10 @@ import { Card, Row, Col, Spinner } from "react-bootstrap";
 import { Line, Bar } from "react-chartjs-2";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTransactions } from "../lib/redux/transactionsSlice";
+import {
+  fetchTransactions,
+  fetchAllTransactions,
+} from "../lib/redux/transactionsSlice";
 import { BiMoney, BiTrendingUp, BiTrendingDown } from "react-icons/bi";
 import {
   Chart as ChartJS,
@@ -34,47 +37,48 @@ ChartJS.register(
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const { documents: transactions, status } = useSelector((state) => state.transactions);
+  const {
+    documents: transactions,
+    status,
+    allTransactions,
+    totalIncome,
+    totalExpense,
+  } = useSelector((state) => state.transactions);
 
-  const [totalIncome, setTotalIncome] = useState(0);
-  const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalUSD, setTotalUSD] = useState(0);
   const [totalGBP, setTotalGBP] = useState(0);
   const [totalEUR, setTotalEUR] = useState(0);
 
   useEffect(() => {
     dispatch(fetchTransactions({}));
+    dispatch(fetchAllTransactions());
   }, [dispatch]);
 
   useEffect(() => {
-    if (status === "succeeded" && transactions) {
-      const income = transactions
-        .filter((t) => t.Type === "Income")
-        .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
-      const expenses = transactions
-        .filter((t) => t.Type === "Expense")
-        .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
-      const usd = transactions
+    if (allTransactions && allTransactions.length > 0) {
+      const usd = allTransactions
         .filter((t) => t.Currency === "USD")
         .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
-      const gbp = transactions
+      const gbp = allTransactions
         .filter((t) => t.Currency === "GBP")
         .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
-      const eur = transactions
+      const eur = allTransactions
         .filter((t) => t.Currency === "EUR")
         .reduce((acc, curr) => acc + parseFloat(curr.Amount), 0);
 
-      setTotalIncome(income);
-      setTotalExpenses(expenses);
       setTotalUSD(usd);
       setTotalGBP(gbp);
       setTotalEUR(eur);
     }
-  }, [transactions, status]);
+  }, [allTransactions]);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString();
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-IN").format(amount); // Formats number with commas as per Indian numbering system
   };
 
   const lineChartData = {
@@ -82,10 +86,11 @@ const Dashboard = () => {
     datasets: [
       {
         label: "Income",
-        data: transactions
-          ?.filter((t) => t.Type === "Income")
-          ?.map((t) => parseFloat(t.Amount))
-          ?.reverse() || [],
+        data:
+          transactions
+            ?.filter((t) => t.Type === "Income")
+            ?.map((t) => parseFloat(t.Amount))
+            ?.reverse() || [],
         borderColor: "#00C853",
         backgroundColor: "rgba(0, 200, 83, 0.2)",
         borderWidth: 1,
@@ -93,10 +98,11 @@ const Dashboard = () => {
       },
       {
         label: "Expenses",
-        data: transactions
-          ?.filter((t) => t.Type === "Expense")
-          ?.map((t) => parseFloat(t.Amount))
-          ?.reverse() || [],
+        data:
+          transactions
+            ?.filter((t) => t.Type === "Expense")
+            ?.map((t) => parseFloat(t.Amount))
+            ?.reverse() || [],
         borderColor: "#D50032",
         backgroundColor: "rgba(213, 0, 50, 0.2)",
         borderWidth: 1,
@@ -110,7 +116,7 @@ const Dashboard = () => {
     datasets: [
       {
         label: "Total Amount",
-        data: [totalIncome, totalExpenses],
+        data: [Number(totalIncome), Number(totalExpense)],
         backgroundColor: ["rgba(0, 200, 83, 0.2)", "rgba(213, 0, 50, 0.2)"],
         borderColor: ["#00C853", "#D50032"],
         borderWidth: 1,
@@ -119,7 +125,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="pt bg-white">
+    <div className=" bg-white">
       {status === "loading" ? (
         <div className="text-center mt-5">
           <Spinner animation="border" variant="primary" />
@@ -139,7 +145,7 @@ const Dashboard = () => {
                       <BiTrendingUp /> Total Income
                     </Card.Title>
                     <Card.Text style={{ fontSize: "2rem", fontWeight: "bold" }}>
-                      PKR {totalIncome.toFixed(2)}
+                      PKR {formatCurrency(Number(totalIncome).toFixed(2))}
                     </Card.Text>
                   </Card.Body>
                 </Card>
@@ -156,13 +162,16 @@ const Dashboard = () => {
                     <Card.Title>Currency Totals</Card.Title>
                     <div>
                       <div>
-                        <strong>USD:</strong> {totalUSD.toFixed(2)} USD
+                        <strong>USD:</strong>{" "}
+                        {formatCurrency(totalUSD.toFixed(2))} USD
                       </div>
                       <div>
-                        <strong>GBP:</strong> {totalGBP.toFixed(2)} GBP
+                        <strong>GBP:</strong>{" "}
+                        {formatCurrency(totalGBP.toFixed(2))} GBP
                       </div>
                       <div>
-                        <strong>EUR:</strong> {totalEUR.toFixed(2)} EUR
+                        <strong>EUR:</strong>{" "}
+                        {formatCurrency(totalEUR.toFixed(2))} EUR
                       </div>
                     </div>
                   </Card.Body>
@@ -182,7 +191,7 @@ const Dashboard = () => {
                       <BiTrendingDown /> Total Expenses
                     </Card.Title>
                     <Card.Text style={{ fontSize: "2rem", fontWeight: "bold" }}>
-                      PKR {totalExpenses.toFixed(2)}
+                      PKR {formatCurrency(Number(totalExpense).toFixed(2))}
                     </Card.Text>
                   </Card.Body>
                 </Card>

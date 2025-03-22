@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, Button, Form, Modal, Spinner } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Form,
+  Modal,
+  Spinner,
+  InputGroup,
+} from "react-bootstrap";
 import Swal from "sweetalert2";
 import { format, parseISO } from "date-fns";
 import {
@@ -9,6 +16,7 @@ import {
   FaPlusSquare,
   FaArrowLeft,
   FaArrowRight,
+  FaSearch,
 } from "react-icons/fa";
 import { AiFillCloseCircle, AiFillSave } from "react-icons/ai";
 import {
@@ -34,6 +42,7 @@ const Transactions = () => {
   const [itemsCountStart, setItemsCountStart] = useState(1);
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterType, setFilterType] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [currentTransaction, setCurrentTransaction] = useState({
@@ -318,50 +327,97 @@ const Transactions = () => {
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
   const filteredTransactions =
     transactions?.filter(
       (transaction) =>
         (filterStatus === "All" || transaction.Status === filterStatus) &&
-        (filterType === "All" || transaction.Type === filterType)
+        (filterType === "All" || transaction.Type === filterType) &&
+        (searchQuery === "" ||
+          transaction.ClientName?.toLowerCase().includes(
+            searchQuery.toLowerCase()
+          ))
     ) || [];
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
 
   return (
     <div>
-      <h1>Transactions</h1>
-      <div className="d-flex align-items-center mb-3">
+      {/* Search and Filter Controls */}
+      <div className="d-flex flex-wrap align-items-center mb-3">
         <Button
           variant="primary"
           onClick={() => handleShow("add")}
-          className="my-4"
+          className="my-2 me-2"
         >
           <FaPlusSquare /> Add Transaction
         </Button>
-        <Form.Group controlId="formFilterStatus" className="mb-0 mx-2">
+
+        {/* Search Bar */}
+        <InputGroup className="my-2 me-2" style={{ maxWidth: "300px" }}>
+          <Form.Control
+            placeholder="Search by client name"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            aria-label="Search clients"
+          />
+          <InputGroup.Text>
+            {searchQuery ? (
+              <Button
+                variant="link"
+                className="p-0"
+                onClick={handleClearSearch}
+                style={{ color: "grey" }}
+              >
+                <AiFillCloseCircle />
+              </Button>
+            ) : (
+              <FaSearch />
+            )}
+          </InputGroup.Text>
+        </InputGroup>
+
+        {/* Status Filter */}
+        <Form.Group controlId="formFilterStatus" className="my-2 me-2">
           <Form.Control
             as="select"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             size="sm"
           >
-            <option value="All">All</option>
+            <option value="All">All Status</option>
             <option value="Pending">Pending</option>
             <option value="Paid">Paid</option>
             <option value="Unpaid">Unpaid</option>
           </Form.Control>
         </Form.Group>
-        <Form.Group controlId="formFilterType" className="mb-0 mx-2">
+
+        {/* Type Filter */}
+        <Form.Group controlId="formFilterType" className="my-2">
           <Form.Control
             as="select"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             size="sm"
           >
-            <option value="All">All</option>
+            <option value="All">All Types</option>
             <option value="Income">Income</option>
             <option value="Expense">Expense</option>
           </Form.Control>
         </Form.Group>
       </div>
+
+      {/* Results Count */}
+      {searchQuery && (
+        <div className="mb-3">
+          Found {filteredTransactions.length} transaction(s) for "{searchQuery}"
+        </div>
+      )}
 
       <Table striped bordered hover responsive className="mt-3 table">
         <thead className="table-dark">
@@ -382,14 +438,20 @@ const Transactions = () => {
         <tbody>
           {status === "loading" ? (
             <tr>
-              <td colSpan="10" className="text-center">
+              <td colSpan="11" className="text-center">
                 <Spinner animation="border" />
               </td>
             </tr>
           ) : status === "failed" ? (
             <tr>
-              <td colSpan="10" className="text-center">
+              <td colSpan="11" className="text-center">
                 Error: {error}
+              </td>
+            </tr>
+          ) : filteredTransactions.length === 0 ? (
+            <tr>
+              <td colSpan="11" className="text-center">
+                No transactions found
               </td>
             </tr>
           ) : (
@@ -493,12 +555,12 @@ const Transactions = () => {
           disabled={!prevCursor || status === "loading"}
           className="d-flex align-items-center"
         >
-          < FaArrowLeft />
+          <FaArrowLeft />
         </Button>
 
         <div className="text-muted d-flex align-items-center">
           Showing {itemsCountStart} -{" "}
-          {itemsCountStart + (transactions?.length || 0) - 1}
+          {itemsCountStart + (filteredTransactions?.length || 0) - 1}
         </div>
 
         <Button

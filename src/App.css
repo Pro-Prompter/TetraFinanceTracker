@@ -1,13 +1,13 @@
 /* Root variables for theme colors */
 :root {
-  --primary-color: #0056b3; /* Primary blue */
-  --secondary-color: #d2002d; /* Secondary red */
-  --light-bg: #f8f9fa; /* Light background */
-  --dark-bg: #343a40; /* Dark background */
-  --text-color: #343a40; /* Text color */
-  --alert-danger: #f8d7da; /* Danger alert color */
-  --alert-success: #d4edda; /* Success alert color */
-  --border-color: #ced4da; /* Border color */
+  --primary-color: #0056b3;
+  --secondary-color: #d2002d;
+  --light-bg: #f8f9fa;
+  --dark-bg: #343a40;
+  --text-color: #343a40;
+  --alert-danger: #f8d7da;
+  --alert-success: #d4edda;
+  --border-color: #ced4da;
 }
 
 /* Global styles */
@@ -19,84 +19,147 @@ body {
   font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
-  transition: background 2s ease, color 2s ease;
-  background: #fff
+  transition: background 0.3s ease, color 0.3s ease;
+  background: #fff;
 }
 
-.auth-page {
-  height: 100vh;
+/* Auth container and layout */
+.auth-container {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 1rem;
+  padding: 1rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #574e4f 0%, #1a1919 100%);
+}
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 /* Card styling */
 .auth-card {
+  width: 100%;
   position: relative;
   padding: 2rem;
-  border: none;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
-  background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .auth-card:hover {
-  transform: scale(1.02); /* Subtle scaling effect on hover */
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); /* More pronounced shadow on hover */
+  transform: scale(1.02);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* Form styling */
 .auth-form {
-  background-color: var(--light-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 0.25rem;
-  padding: 1.5rem;
   width: 100%;
-  transition: background-color 0.3s ease; /* Smooth background transition */
+  transition: background-color 0.3s ease;
 }
 
 .auth-form h2 {
   color: var(--text-color);
   text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.text-gradient {
+  background: linear-gradient(45deg, #850e0e, #d4091a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Input styling */
+.modern-input {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem 1rem 1rem 3rem;
+  transition: all 0.3s ease;
+  width: 100%;
   margin-bottom: 1rem;
 }
 
+.modern-input:focus {
+  border-color: #cf1931;
+  box-shadow: none;
+  outline: none;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
 /* Button styling */
-.btn-animate, .btn-shine, .btn-shine-blue {
+.btn-finance {
+  background: linear-gradient(45deg, #7e1a1a, #c90e17);
+  border: none;
+  color: white;
+  padding: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  width: 100%;
+  cursor: pointer;
+}
+
+.btn-finance:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(206, 10, 20, 0.4);
+}
+
+/* Button styling */
+.btn-animate,
+.btn-shine,
+.btn-shine-blue {
   width: 100%;
   max-width: 400px;
   transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   border: none;
   padding: 0.75rem;
   border-radius: 0.25rem;
-  font-weight: bold; /* Bold text for buttons */
+  font-weight: bold;
+  /* Bold text for buttons */
 }
 
 /* Primary button with animation */
 .btn-animate {
   background-color: var(--primary-color);
   color: white;
-  position: relative; /* For shine effect */
+  position: relative;
+  /* For shine effect */
 }
 
 .btn-animate:hover {
   background-color: var(--secondary-color);
   transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3); /* Shadow on hover */
+  box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3);
+  /* Shadow on hover */
 }
 
 /* Shine effect for buttons */
 .btn-shine {
   position: relative;
   overflow: hidden;
-  background-color: var(--primary-color); /* Base color */
-  color: white; /* Text color */
+  background-color: var(--primary-color);
+  /* Base color */
+  color: white;
+  /* Text color */
 }
 
-.btn-shine::before, .btn-shine-blue::before {
+.btn-shine::before,
+.btn-shine-blue::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -109,30 +172,40 @@ body {
   z-index: 0;
 }
 
-.btn-shine:hover, .btn-shine-blue:hover {
-  background-color: #c82333; /* Darker red */
-  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); /* Glow effect */
+.btn-shine:hover,
+.btn-shine-blue:hover {
+  background-color: #c82333;
+  /* Darker red */
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  /* Glow effect */
 }
 
-.btn-shine:hover::before, .btn-shine-blue:hover::before {
-  transform: translate(-50%, -50%) scale(1); /* Scale effect on hover */
-  z-index: -1; /* Ensure it stays behind the button */
+.btn-shine:hover::before,
+.btn-shine-blue:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+  /* Scale effect on hover */
+  z-index: -1;
+  /* Ensure it stays behind the button */
 }
 
 /* New shine effect for hover */
 .btn-shine-blue {
-  background-color: var(--primary-color); /* Base color */
-  color: white; /* Text color */
+  background-color: var(--primary-color);
+  /* Base color */
+  color: white;
+  /* Text color */
 }
 
 .btn-shine-blue:hover {
-  box-shadow: 0 0 20px rgba(0, 86, 179, 0.8); /* Glow effect */
+  box-shadow: 0 0 20px rgba(0, 86, 179, 0.8);
+  /* Glow effect */
 }
 
 /* Alert styles */
 .alert {
   margin-bottom: 1rem;
-  border-radius: 0.25rem; /* Rounded corners for alerts */
+  border-radius: 0.25rem;
+  /* Rounded corners for alerts */
 }
 
 /* Loading spinner container */
@@ -140,7 +213,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Full height of the viewport */
+  height: 100vh;
+  /* Full height of the viewport */
   padding-top: 20px;
 }
 
@@ -153,7 +227,8 @@ nav.navbar {
   top: 0;
   width: 100%;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for navbar */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for navbar */
 }
 
 nav .container-fluid {
@@ -175,38 +250,7 @@ nav .nav-link {
 
 /* Responsive utility classes */
 .pt {
-  padding-top: 5rem;
-}
-
-/* Nav item styles */
-.nav-item {
-  position: relative;
-  margin: 0 10px;
-  padding: 10px;
-  font-weight: 400;
-  transition: color 0.3s ease, font-weight 0.3s ease;
-}
-
-.nav-item::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 3px;
-  background-color: var(--secondary-color);
-  border-radius: 50px;
-  transition: width 0.3s ease;
-}
-
-.nav-item:hover::after {
-  width: 100%;
-}
-
-.nav-item:hover {
-  color: var(--secondary-color);
-  font-weight: 700;
+  padding-top: 10rem;
 }
 
 /* User dropdown styles */
@@ -228,24 +272,30 @@ nav .nav-link {
 /* Media queries for responsiveness */
 @media (max-width: 768px) {
   .auth-card {
-    padding: 1.5rem; /* Adjust padding for smaller screens */
+    padding: 1.5rem;
+    /* Adjust padding for smaller screens */
   }
 
   .footer_content_main {
-    flex-direction: column; /* Stack items on smaller screens */
+    flex-direction: column;
+    /* Stack items on smaller screens */
   }
 
   .nav-item {
-    margin: 5px 0; /* Adjust margin for vertical stacking */
+    margin: 5px 0;
+    /* Adjust margin for vertical stacking */
   }
 }
+
 .amount {
   font-size: 2rem;
   font-weight: bold;
 }
+
 .currency {
   font-size: 1.2rem;
 }
+
 /* Make the header row bold and more spaced out */
 .table th {
   font-weight: bold;
@@ -270,4 +320,138 @@ nav .nav-link {
 .table th {
   height: 60px;
   /* Increase row height */
+}
+
+/* Custom Navbar Styles */
+.custom-navbar {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.nav-item {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: #fff !important;
+  transform: translateY(-2px);
+}
+
+.nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #fff;
+  transition: width 0.3s ease;
+}
+
+.nav-item:hover::after {
+  width: 100%;
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #ff4444, #cc0000);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(255, 68, 68, 0.4);
+}
+
+.custom-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-toggler .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.1);
+}
+
+/* New CSS additions for auth container and effects */
+
+.gradient-background {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.glassmorphism-effect {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.text-gradient {
+  background: linear-gradient(45deg, #850e0e, #d4091a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-finance {
+  background: linear-gradient(45deg, #7e1a1a, #c90e17);
+  border: none;
+  padding: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.btn-finance:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(206, 10, 20, 0.836);
+}
+
+.modern-input {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem 1rem 1rem 3rem;
+  transition: all 0.3s ease;
+}
+
+.modern-input:focus {
+  border-color: #cf1931;
+  box-shadow: none;
+}
+
+.particles {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  animation: float 20s infinite linear;
+}
+
+@keyframes float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(100vw); opacity: 0; }
 }
