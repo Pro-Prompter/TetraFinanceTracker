@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Button, Form, Alert, Spinner, Card, Container } from "react-bootstrap";
+import { Button, Form, Alert, Spinner, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login as loginThunk } from "../lib/redux/authSlice";
-import { FiArrowRightCircle, FiMail } from "react-icons/fi";
+import { FiArrowRightCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
 import "../App.css";
 

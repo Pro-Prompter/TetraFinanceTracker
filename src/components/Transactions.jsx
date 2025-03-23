@@ -21,6 +21,7 @@ import {
 import { AiFillCloseCircle, AiFillSave } from "react-icons/ai";
 import {
   fetchTransactions,
+  fetchAllTransactions,
   addTransaction,
   updateTransaction,
   deleteTransaction,
@@ -36,13 +37,16 @@ const Transactions = () => {
     prevCursor,
     status,
     error,
+    allTransactions,
   } = useSelector((state) => state.transactions);
 
   const ITEMS_PER_PAGE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
   const [itemsCountStart, setItemsCountStart] = useState(1);
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterType, setFilterType] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [currentTransaction, setCurrentTransaction] = useState({
@@ -71,9 +75,15 @@ const Transactions = () => {
     dispatch(fetchTransactions({}));
   }, [dispatch]);
 
+  // Fetch all transactions when component mounts
+  useEffect(() => {
+    dispatch(fetchAllTransactions());
+  }, [dispatch]);
+
   useEffect(() => {
     if (!prevCursor) {
       setItemsCountStart(1);
+      setCurrentPage(1);
     }
   }, [prevCursor]);
 
@@ -86,6 +96,7 @@ const Transactions = () => {
         })
       );
       setItemsCountStart((prev) => prev + ITEMS_PER_PAGE);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
@@ -97,7 +108,8 @@ const Transactions = () => {
           direction: "prev",
         })
       );
-      setItemsCountStart((prev) => prev - ITEMS_PER_PAGE);
+      setItemsCountStart((prev) => Math.max(1, prev - ITEMS_PER_PAGE));
+      setCurrentPage((prev) => Math.max(1, prev - 1));
     }
   };
 
@@ -262,7 +274,10 @@ const Transactions = () => {
         await dispatch(addTransaction(transactionData));
         dispatch(resetPagination());
         dispatch(fetchTransactions({}));
+        // Refresh all transactions as well
+        dispatch(fetchAllTransactions());
         setItemsCountStart(1);
+        setCurrentPage(1);
         Swal.fire({
           title: "Success!",
           text: "Transaction added successfully.",
@@ -273,6 +288,8 @@ const Transactions = () => {
           updateTransaction({ ...transactionData, $id: currentTransaction.$id })
         );
         dispatch(fetchTransactions({}));
+        // Refresh all transactions as well
+        dispatch(fetchAllTransactions());
         Swal.fire({
           title: "Success!",
           text: "Transaction updated successfully.",
@@ -312,6 +329,8 @@ const Transactions = () => {
           await storage.deleteFile("675d9f9000011543ff7b", receiptId);
         }
         await dispatch(deleteTransaction(id));
+        // Refresh all transactions after deletion
+        await dispatch(fetchAllTransactions());
         await Swal.fire({
           title: "Deleted!",
           text: "Transaction has been deleted.",
@@ -328,11 +347,24 @@ const Transactions = () => {
   };
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Toggle search mode based on whether there's a search query
+    setIsSearching(value !== "");
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setIsSearching(false);
+  };
+
+  // Determine which data source to use based on search state
+  const dataSource = isSearching ? allTransactions : transactions;
+
+  // Filter the appropriate data source
   const filteredTransactions =
-    transactions?.filter(
+    dataSource?.filter(
       (transaction) =>
         (filterStatus === "All" || transaction.Status === filterStatus) &&
         (filterType === "All" || transaction.Type === filterType) &&
@@ -342,8 +374,26 @@ const Transactions = () => {
           ))
     ) || [];
 
-  const handleClearSearch = () => {
-    setSearchQuery("");
+  // Calculate the total number of pages if using search mode
+  const totalPages = isSearching 
+    ? Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE) 
+    : null;
+
+  // For search mode, calculate which items to display based on current page
+  const paginatedSearchResults = isSearching
+    ? filteredTransactions.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+      )
+    : filteredTransactions;
+
+  // Calculate correct serial numbers based on pagination
+  const getSerialNumber = (index) => {
+    if (isSearching) {
+      return (currentPage - 1) * ITEMS_PER_PAGE + index + 1;
+    } else {
+      return itemsCountStart + index;
+    }
   };
 
   return (
@@ -436,13 +486,13 @@ const Transactions = () => {
           </tr>
         </thead>
         <tbody>
-          {status === "loading" ? (
+          {status === "loading" && !isSearching ? (
             <tr>
               <td colSpan="11" className="text-center">
                 <Spinner animation="border" />
               </td>
             </tr>
-          ) : status === "failed" ? (
+          ) : status === "failed" && !isSearching ? (
             <tr>
               <td colSpan="11" className="text-center">
                 Error: {error}
@@ -455,9 +505,10 @@ const Transactions = () => {
               </td>
             </tr>
           ) : (
-            filteredTransactions.map((transaction, index) => (
+            // Display paginated results when searching, otherwise show all filtered transactions
+            (isSearching ? paginatedSearchResults : filteredTransactions).map((transaction, index) => (
               <tr key={transaction.$id}>
-                <td>{filteredTransactions.length - index}</td>
+                <td>{getSerialNumber(index)}</td>
                 <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
                 <td className="text-right">
                   PKR {parseFloat(transaction.Amount).toFixed(2)}
@@ -548,31 +599,70 @@ const Transactions = () => {
         </tbody>
       </Table>
 
+      {/* Pagination controls - different for search vs. normal mode */}
       <div className="d-flex justify-content-between mt-4">
-        <Button
-          variant="fill-primary"
-          onClick={handlePrevPage}
-          disabled={!prevCursor || status === "loading"}
-          className="d-flex align-items-center"
-        >
-          <FaArrowLeft />
-        </Button>
+        {isSearching ? (
+          /* Search mode pagination */
+          <>
+            <Button
+              variant="outline-primary"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1 || status === "loading"}
+              className="d-flex align-items-center"
+            >
+              <FaArrowLeft />
+            </Button>
 
-        <div className="text-muted d-flex align-items-center">
-          Showing {transactions.length ? 1 : 0} - {transactions.length}
-          (Total: {transactions.length})
-        </div>
+            <div className="text-muted d-flex align-items-center">
+              Page {currentPage} of {totalPages || 1}
+              {" | "}
+              Showing {Math.min(filteredTransactions.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)} 
+              {" - "}
+              {Math.min(filteredTransactions.length, currentPage * ITEMS_PER_PAGE)}
+              {" of "}
+              {filteredTransactions.length} transactions
+            </div>
 
-        <Button
-          variant="fill-primary"
-          onClick={handleNextPage}
-          disabled={!nextCursor || status === "loading"}
-          className="d-flex align-items-center"
-        >
-          <FaArrowRight />
-        </Button>
+            <Button
+              variant="outline-primary"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages || 1, prev + 1))}
+              disabled={currentPage >= totalPages || status === "loading"}
+              className="d-flex align-items-center"
+            >
+              <FaArrowRight />
+            </Button>
+          </>
+        ) : (
+          /* Normal mode pagination (using cursors) */
+          <>
+            <Button
+              variant="outline-primary"
+              onClick={handlePrevPage}
+              disabled={!prevCursor || status === "loading"}
+              className="d-flex align-items-center"
+            >
+              <FaArrowLeft />
+            </Button>
+
+            <div className="text-muted d-flex align-items-center">
+              Page {currentPage} | Showing {transactions.length ? itemsCountStart : 0} 
+              {" - "}
+              {itemsCountStart + transactions.length - 1}
+            </div>
+
+            <Button
+              variant="outline-primary"
+              onClick={handleNextPage}
+              disabled={!nextCursor || status === "loading"}
+              className="d-flex align-items-center"
+            >
+              <FaArrowRight />
+            </Button>
+          </>
+        )}
       </div>
       <div className="mb-4"></div>
+      
       {/* Modal for Add/Edit Transaction */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
