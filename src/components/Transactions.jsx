@@ -541,7 +541,7 @@ const Transactions = () => {
                 <td>
                   {transaction.InvoiceId ? (
                     <a
-                      href={storage.getFilePreview(
+                      href={storage.getFileView(
                         "672078b60026aca47d2b",
                         transaction.InvoiceId
                       )}
@@ -557,7 +557,7 @@ const Transactions = () => {
                 <td>
                   {transaction.ReceiptId ? (
                     <a
-                      href={storage.getFilePreview(
+                      href={storage.getFileView(
                         "675d9f9000011543ff7b",
                         transaction.ReceiptId
                       )}
