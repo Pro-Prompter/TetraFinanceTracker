@@ -58,7 +58,7 @@ const Auth = () => {
         transition={{ duration: 0.8 }}
         className="d-flex justify-content-center align-items-center h-100"
       >
-        <Card className="auth-card glassmorphism-effect">
+        <Card className="auth-card glassmorphism-effect shadow-lg">
           <Card.Body className="p-5">
             <div className="text-center mb-5">
               <div className="finance-icon mb-3">
@@ -82,6 +82,7 @@ const Auth = () => {
               <Form.Group className="mb-4">
                 <div className="input-group-lg">
                   <div className="input-icon">
+                    {/* Email Icon */}
                   </div>
                   <Form.Control
                     type="email"
@@ -91,6 +92,7 @@ const Auth = () => {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="modern-input"
                     autoFocus
+                    style={{ borderRadius: "30px", padding: "12px 20px", boxShadow: "0px 4px 10px rgba(0,0,0,0.1)" }}
                   />
                 </div>
               </Form.Group>
@@ -98,6 +100,7 @@ const Auth = () => {
               <Form.Group className="mb-4">
                 <div className="input-group-lg">
                   <div className="input-icon">
+                    {/* Password Icon */}
                   </div>
                   <Form.Control
                     type="password"
@@ -106,6 +109,7 @@ const Auth = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="modern-input"
+                    style={{ borderRadius: "30px", padding: "12px 20px", boxShadow: "0px 4px 10px rgba(0,0,0,0.1)" }}
                   />
                 </div>
               </Form.Group>
@@ -115,7 +119,13 @@ const Auth = () => {
                   variant="danger"
                   type="submit"
                   disabled={status === "loading"}
-                  className="w-100 btn-finance"
+                  className="w-100 btn-finance rounded-pill"
+                  style={{
+                    padding: "12px 20px",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    transition: "transform 0.3s ease",
+                  }}
                 >
                   {status === "loading" ? (
                     <Spinner animation="border" size="sm" variant="light" />

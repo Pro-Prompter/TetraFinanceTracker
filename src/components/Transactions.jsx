@@ -474,11 +474,11 @@ const Transactions = () => {
           <tr>
             <th>#</th>
             <th>Date</th>
-            <th className="text-right">Amount</th>
             <th>Client</th>
             <th>Project Name</th>
             <th className="text-center">Company Name</th>
             <th className="text-center">Project Dates</th>
+            <th className="text-right">Amount</th>
             <th className="text-right">Discount</th>
             <th>Invoice</th>
             <th>Receipt</th>
@@ -510,9 +510,6 @@ const Transactions = () => {
               <tr key={transaction.$id}>
                 <td>{getSerialNumber(index)}</td>
                 <td>{format(parseISO(transaction.Date), "dd-MM-yyyy")}</td>
-                <td className="text-right">
-                  PKR {parseFloat(transaction.Amount).toFixed(2)}
-                </td>
                 <td>{transaction.ClientName || "N/A"}</td>
                 <td>{transaction.ProjectName || "N/A"}</td>
                 <td>{transaction.CompanyName || "N/A"}</td>
@@ -534,6 +531,9 @@ const Transactions = () => {
                   ) : (
                     "N/A"
                   )}
+                </td>
+                <td className="text-right">
+                  PKR {parseFloat(transaction.Amount).toFixed(2)}
                 </td>
                 <td className="text-right">
                   {transaction.Discount ? transaction.Discount : "N/A"}
